@@ -6,13 +6,13 @@ import com.github.bestheroz.standard.common.enums.AuthorityEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+;
+;
 ;
 
 public class UserDto {
-  @Data
-  @AllArgsConstructor
+  
+  
   public static class Request {
     @Schema(description = "페이지 번호", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer page;
@@ -21,8 +21,8 @@ public class UserDto {
     private Integer pageSize;
   }
 
-  @Data
-  @EqualsAndHashCode(callSuper = true)
+  
+  
   public static class Response extends IdCreatedUpdatedDto {
     @Schema(description = "로그인 아이디", requiredMode = Schema.RequiredMode.REQUIRED)
     private String loginId;

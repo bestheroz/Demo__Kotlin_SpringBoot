@@ -7,44 +7,65 @@ import com.github.bestheroz.standard.common.enums.UserTypeEnum
 import com.github.bestheroz.standard.common.security.Operator
 import jakarta.persistence.*
 import java.time.Instant
+import javax.persistence.*
 
 @MappedSuperclass
-data class IdCreated(
+open class IdCreated {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private val id: Long? = null,
+    var id: Long? = null
+
     @Column(updatable = false)
-    private var createdAt: Instant,
+    var createdAt: Instant? = null
+
     @Column(name = "created_object_type", updatable = false)
-    private var createdObjectType: UserTypeEnum,
+    var createdObjectType: UserTypeEnum? = null
+
     @Column(name = "created_object_id", updatable = false)
-    private var createdObjectId: Long,
+    var createdObjectId: Long? = null
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_object_id", referencedColumnName = "id", insertable = false, updatable = false)
-    private var createdByAdmin: Admin? = null,
+    @JoinColumn(
+        name = "created_object_id",
+        referencedColumnName = "id",
+        insertable = false,
+        updatable = false,
+    )
+    var createdByAdmin: Admin? = null
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_object_id", referencedColumnName = "id", insertable = false, updatable = false)
-    private var createdByUser: User? = null,
-) {
+    @JoinColumn(
+        name = "created_object_id",
+        referencedColumnName = "id",
+        insertable = false,
+        updatable = false,
+    )
+    var createdByUser: User? = null
+
     fun setCreatedBy(
         operator: Operator,
         instant: Instant,
     ) {
-        if (operator.type == UserTypeEnum.ADMIN) {
-            this.createdObjectType = UserTypeEnum.ADMIN
-            this.createdByAdmin = Admin.fromOperator(operator)
-        } else if (operator.type == UserTypeEnum.USER) {
-            this.createdObjectType = UserTypeEnum.USER
-            this.createdByUser = User.fromOperator(operator)
+        when (operator.type) {
+            UserTypeEnum.ADMIN -> {
+                createdObjectType = UserTypeEnum.ADMIN
+                createdByAdmin = Admin.fromOperator(operator)
+            }
+            UserTypeEnum.USER -> {
+                createdObjectType = UserTypeEnum.USER
+                createdByUser = User.fromOperator(operator)
+            }
         }
-        this.createdAt = instant
-        this.createdObjectId = operator.id
-        this.createdObjectType = operator.type
+        createdAt = instant
+        createdObjectId = operator.id
+        createdObjectType = operator.type
     }
 
-    fun getCreatedBy(): UserSimpleDto =
-        when (this.createdObjectType) {
-            UserTypeEnum.ADMIN -> UserSimpleDto.fromEntity(this.createdByAdmin)
-            UserTypeEnum.USER -> UserSimpleDto.fromEntity(this.createdByUser)
-        }
+    val createdBy: UserSimpleDto
+        get() =
+            when (createdObjectType) {
+                UserTypeEnum.ADMIN -> UserSimpleDto.fromEntity(createdByAdmin!!)
+                UserTypeEnum.USER -> UserSimpleDto.fromEntity(createdByUser!!)
+                else -> throw IllegalStateException("Unknown user type")
+            }
 }

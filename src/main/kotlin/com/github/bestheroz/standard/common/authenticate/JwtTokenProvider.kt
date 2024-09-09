@@ -76,7 +76,7 @@ class JwtTokenProvider(
                 .getClaim("authorities")
                 .asList(String::class.java)
                 .stream()
-                .map { value: String? -> AuthorityEnum.valueOf(value) }
+                .map { value: String -> AuthorityEnum.valueOf(value) }
                 .toList(),
         )
     }

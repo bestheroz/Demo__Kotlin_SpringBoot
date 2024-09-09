@@ -1,18 +1,17 @@
 package com.github.bestheroz.demo.admin;
 
-import com.github.bestheroz.demo.entity.Admin;
 import com.github.bestheroz.standard.common.dto.IdCreatedUpdatedDto;
 import com.github.bestheroz.standard.common.enums.AuthorityEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+;
+;
 ;
 
 public class AdminDto {
-  @Data
-  @AllArgsConstructor
+
+
   public static class Request {
     @Schema(description = "페이지 번호", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer page;
@@ -21,8 +20,8 @@ public class AdminDto {
     private Integer pageSize;
   }
 
-  @Data
-  @EqualsAndHashCode(callSuper = true)
+
+
   public static class Response extends IdCreatedUpdatedDto {
     @Schema(description = "로그인 아이디", requiredMode = Schema.RequiredMode.REQUIRED)
     private String loginId;

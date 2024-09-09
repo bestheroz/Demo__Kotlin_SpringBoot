@@ -3,10 +3,10 @@ package com.github.bestheroz.demo.notice;
 import com.github.bestheroz.demo.entity.Notice;
 import com.github.bestheroz.standard.common.security.Operator;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
+;
 
 public class NoticeCreateDto {
-  @Data
+  
   public static class Request {
     @Schema(description = "제목", requiredMode = Schema.RequiredMode.REQUIRED)
     private String title;

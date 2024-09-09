@@ -1,6 +1,5 @@
 package com.github.bestheroz.standard.common.security
 
-import com.github.bestheroz.demo.entity.Admin
 import com.github.bestheroz.demo.entity.User
 import com.github.bestheroz.standard.common.enums.AuthorityEnum
 import com.github.bestheroz.standard.common.enums.UserTypeEnum

@@ -1,60 +1,65 @@
-package com.github.bestheroz.standard.common.entity;
+package com.github.bestheroz.standard.common.entity
 
-import com.github.bestheroz.demo.entity.Admin;
-import com.github.bestheroz.demo.entity.User;
-import com.github.bestheroz.standard.common.dto.UserSimpleDto;
-import com.github.bestheroz.standard.common.enums.UserTypeEnum;
-import com.github.bestheroz.standard.common.security.Operator;
-import jakarta.persistence.*;
-import java.time.Instant;
-
-
-
-
+import com.github.bestheroz.demo.entity.Admin
+import com.github.bestheroz.demo.entity.User
+import com.github.bestheroz.standard.common.dto.UserSimpleDto
+import com.github.bestheroz.standard.common.enums.UserTypeEnum
+import com.github.bestheroz.standard.common.security.Operator
+import jakarta.persistence.*
+import java.time.Instant
 
 @MappedSuperclass
-public class IdCreatedUpdated extends IdCreated {
-  @Column(name = "updated_object_type")
-  private UserTypeEnum updatedObjectType;
+open class IdCreatedUpdated : IdCreated() {
+    @Column(name = "updated_object_type")
+    var updatedObjectType: UserTypeEnum? = null
 
-  private Instant updatedAt;
+    var updatedAt: Instant? = null
 
-  @Column(name = "updated_object_id")
-  private Long updatedObjectId;
+    @Column(name = "updated_object_id")
+    var updatedObjectId: Long? = null
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(
-      name = "updated_object_id",
-      referencedColumnName = "id",
-      insertable = false,
-      updatable = false)
-  private Admin updatedByAdmin;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "updated_object_id",
+        referencedColumnName = "id",
+        insertable = false,
+        updatable = false,
+    )
+    var updatedByAdmin: Admin? = null
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(
-      name = "updated_object_id",
-      referencedColumnName = "id",
-      insertable = false,
-      updatable = false)
-  private User updatedByUser;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "updated_object_id",
+        referencedColumnName = "id",
+        insertable = false,
+        updatable = false,
+    )
+    var updatedByUser: User? = null
 
-  public void setUpdatedBy(Operator operator, Instant instant) {
-    if (operator.type.equals(UserTypeEnum.ADMIN)) {
-      this.updatedObjectType = UserTypeEnum.ADMIN;
-      this.updatedByAdmin = Admin.fromOperator(operator);
-    } else if (operator.type.equals(UserTypeEnum.USER)) {
-      this.updatedObjectType = UserTypeEnum.USER;
-      this.updatedByUser = User.fromOperator(operator);
+    fun setUpdatedBy(
+        operator: Operator,
+        instant: Instant,
+    ) {
+        when (operator.type) {
+            UserTypeEnum.ADMIN -> {
+                updatedObjectType = UserTypeEnum.ADMIN
+                updatedByAdmin = Admin.fromOperator(operator)
+            }
+            UserTypeEnum.USER -> {
+                updatedObjectType = UserTypeEnum.USER
+                updatedByUser = User.fromOperator(operator)
+            }
+        }
+        updatedAt = instant
+        updatedObjectId = operator.id
+        updatedObjectType = operator.type
     }
-    this.setUpdatedAt(instant);
-    this.setUpdatedObjectId(operator.getId());
-    this.setUpdatedObjectType(operator.type);
-  }
 
-  public UserSimpleDto getUpdatedBy() {
-    return switch (this.updatedObjectType) {
-      case ADMIN -> UserSimpleDto.fromEntity(this.updatedByAdmin);
-      case USER -> UserSimpleDto.fromEntity(this.updatedByUser);
-    };
-  }
+    val updatedBy: UserSimpleDto
+        get() =
+            when (updatedObjectType) {
+                UserTypeEnum.ADMIN -> UserSimpleDto.fromEntity(updatedByAdmin!!)
+                UserTypeEnum.USER -> UserSimpleDto.fromEntity(updatedByUser!!)
+                else -> throw IllegalStateException("Unknown user type")
+            }
 }

@@ -1,6 +1,5 @@
 package com.github.bestheroz.demo.admin;
 
-import com.github.bestheroz.demo.entity.Admin;
 import com.github.bestheroz.demo.repository.AdminRepository;
 import com.github.bestheroz.standard.common.authenticate.JwtTokenProvider;
 import com.github.bestheroz.standard.common.dto.ListResult;

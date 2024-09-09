@@ -1,12 +1,8 @@
-package com.github.bestheroz.standard.common.authenticate;
+package com.github.bestheroz.standard.common.authenticate
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 
-@Target(ElementType.PARAMETER)
-@Retention(RetentionPolicy.RUNTIME)
+@Target(AnnotationTarget.VALUE_PARAMETER)
+@Retention(AnnotationRetention.RUNTIME)
 @AuthenticationPrincipal
-public @interface CurrentUser {}
+annotation class CurrentUser 

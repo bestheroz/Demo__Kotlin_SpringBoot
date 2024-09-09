@@ -1,10 +1,10 @@
 package com.github.bestheroz.demo.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
+;
 
 public class UserLoginDto {
-  @Data
+  
   public static class Request {
     @Schema(description = "로그인 아이디", requiredMode = Schema.RequiredMode.REQUIRED)
     private String loginId;

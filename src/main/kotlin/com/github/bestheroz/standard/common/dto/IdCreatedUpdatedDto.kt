@@ -1,12 +1,13 @@
-package com.github.bestheroz.standard.common.dto;
+package com.github.bestheroz.standard.common.dto
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-;
+import io.swagger.v3.oas.annotations.media.Schema
+import java.time.Instant
 
-@Data
-@EqualsAndHashCode(callSuper = true)
-public class IdCreatedUpdatedDto extends CreatedUpdatedDto {
-  @Schema(description = "ID(KEY)", requiredMode = Schema.RequiredMode.REQUIRED)
-  private Long id;
-}
+open class IdCreatedUpdatedDto(
+    @Schema(description = "ID(KEY)", requiredMode = Schema.RequiredMode.REQUIRED)
+    open val id: Long,
+    updatedAt: Instant,
+    updatedBy: UserSimpleDto,
+    createdAt: Instant,
+    createdBy: UserSimpleDto,
+) : CreatedUpdatedDto(updatedAt, updatedBy, createdAt, createdBy)

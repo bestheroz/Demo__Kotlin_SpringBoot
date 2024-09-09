@@ -5,10 +5,10 @@ import com.github.bestheroz.standard.common.enums.AuthorityEnum;
 import com.github.bestheroz.standard.common.security.Operator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
-import lombok.Data;
+;
 
 public class UserCreateDto {
-  @Data
+  
   public static class Request {
     @Schema(description = "로그인 아이디", requiredMode = Schema.RequiredMode.REQUIRED)
     private String loginId;
