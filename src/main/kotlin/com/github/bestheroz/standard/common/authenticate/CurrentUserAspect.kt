@@ -12,14 +12,11 @@ import org.springframework.stereotype.Component
 @Component
 class CurrentUserAspect {
     @Around("execution(* com.github.bestheroz..*(.., @com.github.bestheroz.standard.common.authenticate.CurrentUser (*), ..))")
-    @Throws(
-        Throwable::class,
-    )
+    @Throws(Throwable::class)
     fun checkCurrentUser(joinPoint: ProceedingJoinPoint): Any? {
-        val authentication = SecurityContextHolder.getContext().authentication
-        if (!authentication.isAuthenticated || authentication.principal == null) {
-            throw AuthenticationException401(ExceptionCode.EXPIRED_TOKEN)
-        }
+        SecurityContextHolder.getContext().authentication.takeIf { it.isAuthenticated && it.principal != null }
+            ?: throw AuthenticationException401(ExceptionCode.EXPIRED_TOKEN)
+
         return joinPoint.proceed()
     }
 }

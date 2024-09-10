@@ -67,13 +67,11 @@ class AdminService(
             .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
             .let { admin ->
 
-                if (admin.removedFlag) {
-                    throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
-                }
-                if (!admin.managerFlag && admin.id == operator.id) {
+                admin.takeIf { it.removedFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
+                admin.takeIf { !request.managerFlag && it.id == operator.id }?.let {
                     throw RequestException400(ExceptionCode.CANNOT_UPDATE_YOURSELF)
                 }
-                if (!admin.managerFlag && !request.managerFlag && !operator.managerFlag) {
+                admin.takeIf { !it.managerFlag && !request.managerFlag && !operator.managerFlag }?.let {
                     throw RequestException400(ExceptionCode.UNKNOWN_AUTHORITY)
                 }
                 adminRepository
@@ -99,12 +97,8 @@ class AdminService(
         .findById(id)
         .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
         .let { admin ->
-
-            if (admin.removedFlag) throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
-            if (admin.id == operator.id) {
-                throw RequestException400(ExceptionCode.CANNOT_REMOVE_YOURSELF)
-            }
-
+            admin.takeIf { it.removedFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
+            admin.takeIf { it.id == operator.id }?.let { throw RequestException400(ExceptionCode.CANNOT_REMOVE_YOURSELF) }
             admin.remove(operator)
         }
 
@@ -117,16 +111,14 @@ class AdminService(
             .findById(id)
             .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
             .let { admin ->
-
-                if (admin.removedFlag) throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
-                if (!verifyPassword(request.oldPassword, admin.password ?: "")) {
+                admin.takeIf { it.removedFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
+                admin.password?.takeUnless { verifyPassword(request.oldPassword, it) }?.let {
                     log.warn("password not match")
                     throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
                 }
-                if (admin.password == request.newPassword) {
+                admin.password?.takeIf { it == request.newPassword }?.let {
                     throw RequestException400(ExceptionCode.CHANGE_TO_SAME_PASSWORD)
                 }
-
                 admin.changePassword(request.newPassword, operator)
                 return AdminDto.Response.of(admin)
             }
@@ -137,10 +129,8 @@ class AdminService(
             .orElseThrow { RequestException400(ExceptionCode.UNJOINED_ACCOUNT) }
             .let { admin ->
 
-                if (!admin.useFlag) {
-                    throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
-                }
-                if (!verifyPassword(request.password, admin.password ?: "")) {
+                admin.takeUnless { admin.useFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
+                admin.password?.takeUnless { verifyPassword(request.password, it) }?.let {
                     log.warn("password not match")
                     throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
                 }
@@ -153,19 +143,17 @@ class AdminService(
             .findById(jwtTokenProvider.getId(refreshToken))
             .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
             .let { admin ->
-                if (admin.removedFlag ||
-                    admin.token == null || !jwtTokenProvider.validateToken(refreshToken)
-                ) {
-                    throw AuthenticationException401()
-                }
-                admin.token?.let {
+                admin
+                    .takeIf { admin.removedFlag || admin.token == null || !jwtTokenProvider.validateToken(refreshToken) }
+                    ?.let { throw AuthenticationException401() }
+
+                admin.token?.let { it ->
                     if (jwtTokenProvider.issuedRefreshTokenIn3Seconds(it)) {
                         return TokenDto(
                             jwtTokenProvider.createAccessToken(Operator(admin)),
                             it,
                         )
-                    }
-                    if (it == refreshToken) {
+                    } else if (it == refreshToken) {
                         admin.renewToken(jwtTokenProvider.createRefreshToken(Operator(admin)))
                         return TokenDto(
                             jwtTokenProvider.createAccessToken(Operator(admin)),
