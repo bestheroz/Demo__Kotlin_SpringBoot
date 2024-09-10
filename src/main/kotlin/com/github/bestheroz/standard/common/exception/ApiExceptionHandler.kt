@@ -15,15 +15,13 @@ import org.springframework.validation.BindException
 import org.springframework.web.HttpMediaTypeNotAcceptableException
 import org.springframework.web.HttpMediaTypeNotSupportedException
 import org.springframework.web.HttpRequestMethodNotSupportedException
-import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import java.lang.IllegalStateException
 
-@ControllerAdvice
-@RestController
+@RestControllerAdvice
 class ApiExceptionHandler {
     companion object {
         private val log = logger()
