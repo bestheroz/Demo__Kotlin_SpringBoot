@@ -3,24 +3,23 @@ package com.github.bestheroz.standard.common.entity.converter
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import jakarta.persistence.AttributeConverter
+import jakarta.persistence.Converter
+import org.apache.commons.lang3.StringUtils
 
-@jakarta.persistence.Converter
+@Converter
 class JsonAttributeConverter(
     private val objectMapper: ObjectMapper,
 ) : AttributeConverter<Any, String> {
-    override fun convertToDatabaseColumn(attribute: Any): String {
+    override fun convertToDatabaseColumn(attribute: Any): String =
         try {
-            return objectMapper.writeValueAsString(attribute)
-        } catch (e: java.lang.Exception) {
-            throw java.lang.RuntimeException(e)
+            objectMapper.writeValueAsString(attribute)
+        } catch (e: Exception) {
+            throw RuntimeException(e)
         }
-    }
 
     override fun convertToEntityAttribute(dbData: String): Any? {
         try {
-            if (io.micrometer.common.util.StringUtils
-                    .isEmpty(dbData)
-            ) {
+            if (StringUtils.isEmpty(dbData)) {
                 return null
             }
             if (dbData.startsWith("[")) {
@@ -33,8 +32,8 @@ class JsonAttributeConverter(
                 )
             }
             return dbData
-        } catch (e: java.lang.Exception) {
-            throw java.lang.RuntimeException(e)
+        } catch (e: Exception) {
+            throw RuntimeException(e)
         }
     }
 }

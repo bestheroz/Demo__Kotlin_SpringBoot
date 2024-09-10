@@ -12,25 +12,21 @@ open class GenericEnumConverter<T : Enum<T>> : AttributeConverter<T?, String?> {
         (javaClass.genericSuperclass as ParameterizedType)
             .actualTypeArguments[0] as Class<T>
 
-    override fun convertToDatabaseColumn(attribute: T?): String? {
-        if (attribute == null) {
-            return null
+    override fun convertToDatabaseColumn(attribute: T?): String? =
+        attribute?.let {
+            return@convertToDatabaseColumn it.name.lowercase(Locale.getDefault())
         }
-        return attribute.name.lowercase(Locale.getDefault())
-    }
 
-    override fun convertToEntityAttribute(dbData: String?): T? {
-        if (dbData == null) {
-            return null
+    override fun convertToEntityAttribute(dbData: String?): T? =
+        dbData?.let {
+            return@convertToEntityAttribute Stream
+                .of(*enumClass.enumConstants)
+                .filter { e: T -> e.name.lowercase(Locale.getDefault()) == it }
+                .findFirst()
+                .orElseThrow {
+                    IllegalArgumentException(
+                        "Unknown enum value: $it",
+                    )
+                }
         }
-        return Stream
-            .of(*enumClass.enumConstants)
-            .filter { e: T -> e.name.lowercase(Locale.getDefault()) == dbData }
-            .findFirst()
-            .orElseThrow {
-                IllegalArgumentException(
-                    "Unknown enum value: $dbData",
-                )
-            }
-    }
 }

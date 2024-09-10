@@ -32,12 +32,8 @@ class OpenApiConfig {
     @Bean
     fun customizeOperation(): OperationCustomizer =
         OperationCustomizer { operation: Operation, handlerMethod: HandlerMethod ->
-            val securityRequirement =
-                handlerMethod.getMethodAnnotation(
-                    SecurityRequirement::class.java,
-                )
+            val securityRequirement = handlerMethod.getMethodAnnotation(SecurityRequirement::class.java)
             if (securityRequirement == null) {
-                // If @SecurityRequirement is not present, remove any security requirements
                 operation.security = null
             }
             operation

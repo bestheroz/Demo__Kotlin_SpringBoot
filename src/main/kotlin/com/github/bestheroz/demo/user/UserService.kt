@@ -67,7 +67,7 @@ class UserService(
             .findById(id)
             .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
             .let { user ->
-                if (user.removedFlag) throw RequestException400(ExceptionCode.UNKNOWN_USER)
+                user.takeIf { it.removedFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_USER) }
 
                 userRepository
                     .findByLoginIdAndRemovedFlagFalseAndIdNot(
@@ -93,12 +93,8 @@ class UserService(
         .findById(id)
         .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
         .let { user ->
-
-            if (user.removedFlag) throw RequestException400(ExceptionCode.UNKNOWN_USER)
-            if (user.id == operator.id) {
-                throw RequestException400(ExceptionCode.CANNOT_REMOVE_YOURSELF)
-            }
-
+            user.takeIf { it.removedFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_USER) }
+            user.takeIf { it.id == operator.id }?.let { throw RequestException400(ExceptionCode.CANNOT_REMOVE_YOURSELF) }
             user.remove(operator)
         }
 
@@ -111,16 +107,14 @@ class UserService(
             .findById(id)
             .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
             .let { user ->
-
-                if (user.removedFlag) throw RequestException400(ExceptionCode.UNKNOWN_USER)
-                if (!verifyPassword(request.oldPassword, user.password ?: "")) {
+                user.takeIf { it.removedFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_USER) }
+                user.password?.takeUnless { verifyPassword(request.oldPassword, it) }?.let {
                     log.warn("password not match")
-                    throw RequestException400(ExceptionCode.UNKNOWN_USER)
+                    throw RequestException400(ExceptionCode.INVALID_PASSWORD)
                 }
-                if (user.password == request.newPassword) {
+                user.password?.takeIf { it == request.newPassword }?.let {
                     throw RequestException400(ExceptionCode.CHANGE_TO_SAME_PASSWORD)
                 }
-
                 user.changePassword(request.newPassword, operator)
                 return UserDto.Response.of(user)
             }
@@ -130,13 +124,10 @@ class UserService(
             .findByLoginIdAndRemovedFlagFalse(request.loginId)
             .orElseThrow<RequestException400> { RequestException400(ExceptionCode.UNJOINED_ACCOUNT) }
             .let { user ->
-
-                if (!user.useFlag) {
-                    throw RequestException400(ExceptionCode.UNKNOWN_USER)
-                }
-                if (!verifyPassword(request.password, user.password ?: "")) {
+                user.takeIf { it.removedFlag || !user.useFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_USER) }
+                user.password?.takeUnless { verifyPassword(request.password, it) }?.let {
                     log.warn("password not match")
-                    throw RequestException400(ExceptionCode.UNKNOWN_USER)
+                    throw RequestException400(ExceptionCode.INVALID_PASSWORD)
                 }
                 user.renewToken(jwtTokenProvider.createRefreshToken(Operator(user)))
                 return TokenDto(
@@ -150,12 +141,9 @@ class UserService(
             .findById(jwtTokenProvider.getId(refreshToken))
             .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
             .let { user ->
-                if (user.removedFlag ||
-                    user.token == null ||
-                    !jwtTokenProvider.validateToken(refreshToken)
-                ) {
-                    throw AuthenticationException401()
-                }
+                user
+                    .takeIf { user.removedFlag || user.token == null || !jwtTokenProvider.validateToken(refreshToken) }
+                    ?.let { throw AuthenticationException401() }
                 user.token?.let {
                     if (jwtTokenProvider.issuedRefreshTokenIn3Seconds(it)) {
                         return TokenDto(

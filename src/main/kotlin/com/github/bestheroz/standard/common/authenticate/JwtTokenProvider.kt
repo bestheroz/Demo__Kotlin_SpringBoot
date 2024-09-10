@@ -8,10 +8,9 @@ import com.github.bestheroz.standard.common.enums.AuthorityEnum
 import com.github.bestheroz.standard.common.enums.UserTypeEnum
 import com.github.bestheroz.standard.common.log.logger
 import com.github.bestheroz.standard.common.security.Operator
+import com.github.bestheroz.standard.common.util.LogUtils
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
 import org.springframework.util.Assert
@@ -55,13 +54,6 @@ class JwtTokenProvider(
             .sign(algorithm)
     }
 
-    fun getAuthentication(token: String): Authentication =
-        UsernamePasswordAuthenticationToken(
-            getOperator(token),
-            "",
-            getOperator(token).authorities,
-        )
-
     fun getId(token: String): Long = verifyToken(token).getClaim("id").asLong()
 
     fun getOperator(token: String): UserDetails {
@@ -81,13 +73,10 @@ class JwtTokenProvider(
         )
     }
 
-    fun resolveAccessToken(request: HttpServletRequest): String? {
-        val bearerToken = request.getHeader("Authorization")
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7)
+    fun resolveAccessToken(request: HttpServletRequest): String? =
+        request.getHeader("Authorization")?.let {
+            return@resolveAccessToken it.takeIf { it.startsWith("Bearer ") }?.substring(7) ?: it
         }
-        return null
-    }
 
     fun validateToken(token: String): Boolean {
         try {
@@ -99,16 +88,21 @@ class JwtTokenProvider(
         }
     }
 
-    fun issuedRefreshTokenIn3Seconds(refreshToken: String): Boolean {
+    fun issuedRefreshTokenIn3Seconds(refreshToken: String): Boolean =
         try {
-            val jwt = JWT.require(algorithm).build().verify(refreshToken)
-            val expiresAt = jwt.expiresAt.toInstant()
-            return Instant.now().plusSeconds(3).isBefore(expiresAt)
+            Instant.now().plusSeconds(3).isBefore(
+                JWT
+                    .require(algorithm)
+                    .build()
+                    .verify(refreshToken)
+                    .expiresAt
+                    .toInstant(),
+            )
         } catch (e: JWTVerificationException) {
             log.warn("Invalid refresh token: {}", e.message)
-            return false
+            log.warn(LogUtils.getStackTrace(e))
+            false
         }
-    }
 
     private fun verifyToken(token: String): DecodedJWT = JWT.require(algorithm).build().verify(token.replace("Bearer ", ""))
 }

@@ -114,7 +114,7 @@ class AdminService(
                 admin.takeIf { it.removedFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
                 admin.password?.takeUnless { verifyPassword(request.oldPassword, it) }?.let {
                     log.warn("password not match")
-                    throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
+                    throw RequestException400(ExceptionCode.INVALID_PASSWORD)
                 }
                 admin.password?.takeIf { it == request.newPassword }?.let {
                     throw RequestException400(ExceptionCode.CHANGE_TO_SAME_PASSWORD)
@@ -132,7 +132,7 @@ class AdminService(
                 admin.takeUnless { admin.useFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
                 admin.password?.takeUnless { verifyPassword(request.password, it) }?.let {
                     log.warn("password not match")
-                    throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
+                    throw RequestException400(ExceptionCode.INVALID_PASSWORD)
                 }
                 admin.renewToken(jwtTokenProvider.createRefreshToken(Operator(admin)))
                 return TokenDto(jwtTokenProvider.createAccessToken(Operator(admin)), admin.token ?: "")

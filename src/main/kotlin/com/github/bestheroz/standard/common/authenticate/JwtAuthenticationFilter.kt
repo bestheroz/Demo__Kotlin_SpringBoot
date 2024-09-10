@@ -85,15 +85,8 @@ class JwtAuthenticationFilter(
             }
 
             val userDetails: UserDetails = jwtTokenProvider.getOperator(token)
-            SecurityContextHolder
-                .getContext()
-                .setAuthentication(
-                    UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities(),
-                    ),
-                )
+            SecurityContextHolder.getContext().authentication =
+                UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
 
             filterChain.doFilter(request, response)
         } finally {
@@ -105,11 +98,15 @@ class JwtAuthenticationFilter(
     }
 
     private fun isPublicPath(request: HttpServletRequest): Boolean =
-        if (request.method == HttpMethod.GET.toString()) {
-            publicGetPaths.stream().anyMatch { matcher: AntPathRequestMatcher -> matcher.matches(request) }
-        } else if (request.method == HttpMethod.POST.toString()) {
-            publicPostPaths.stream().anyMatch { matcher: AntPathRequestMatcher -> matcher.matches(request) }
-        } else {
-            false
+        when (request.method) {
+            HttpMethod.GET.toString() -> {
+                publicGetPaths.stream().anyMatch { matcher: AntPathRequestMatcher -> matcher.matches(request) }
+            }
+            HttpMethod.POST.toString() -> {
+                publicPostPaths.stream().anyMatch { matcher: AntPathRequestMatcher -> matcher.matches(request) }
+            }
+            else -> {
+                false
+            }
         }
 }

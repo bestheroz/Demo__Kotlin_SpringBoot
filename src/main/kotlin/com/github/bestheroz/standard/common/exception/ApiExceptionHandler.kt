@@ -5,7 +5,6 @@ import com.github.bestheroz.standard.common.response.ApiResult
 import com.github.bestheroz.standard.common.response.Result
 import com.github.bestheroz.standard.common.util.LogUtils
 import jakarta.servlet.http.HttpServletResponse
-import org.apache.commons.lang3.StringUtils
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -54,7 +53,7 @@ class ApiExceptionHandler {
     fun authenticationException401(e: AuthenticationException401): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
         val builder: ResponseEntity.BodyBuilder = ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        if (e.exceptionCode.equals(ExceptionCode.EXPIRED_TOKEN)) {
+        if (e.exceptionCode == ExceptionCode.EXPIRED_TOKEN) {
             builder.header("token", "must-renew")
         }
         return builder.body(ApiResult.of(e.exceptionCode, e.data))
@@ -113,13 +112,6 @@ class ApiExceptionHandler {
         e: Throwable?,
         response: HttpServletResponse,
     ): ResponseEntity<ApiResult<*>> {
-        if (StringUtils.equals(
-                response.getHeader("refreshToken"),
-                "must",
-            )
-        ) { // 데이터 수정시 가끔 이곳으로 넘어와 버리네..
-            return Result.unauthenticated()
-        }
         log.warn(LogUtils.getStackTrace(e))
         return ResponseEntity.badRequest().build()
     }
