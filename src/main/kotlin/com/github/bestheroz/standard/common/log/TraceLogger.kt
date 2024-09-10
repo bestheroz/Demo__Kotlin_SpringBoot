@@ -50,14 +50,12 @@ class TraceLogger(
                     }
                 }
                 !signature.contains("HealthController") -> {
-                    println("retVal: $retVal")
                     log.info(
                         STR_END_EXECUTE_TIME,
                         signature,
                         stopWatch.time,
                         retVal?.let {
                             val str = objectMapper.writeValueAsString(retVal)
-                            println("str = $str")
                             str.abbreviate(1000, "--skip massive text-- total length : ${str.length}")
                         } ?: "null",
                     )

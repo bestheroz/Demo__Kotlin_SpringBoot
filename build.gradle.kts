@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -5,8 +6,8 @@ plugins {
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
-    kotlin("kapt") version kotlinVersion
 
+    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
     id("org.springframework.boot") version "3.3.3"
     id("io.spring.dependency-management") version "1.1.6"
     id("com.diffplug.spotless") version "7.0.0.BETA2"
@@ -22,47 +23,68 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.3.3")
+        mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.2.0-M1")
+    }
+}
+
 dependencies {
-    // kotlin
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    // Kotlin
+    implementation(kotlin("reflect"))
+    implementation(kotlin("stdlib"))
+    implementation("com.google.dagger:dagger-compiler:2.51.1")
+    ksp("com.google.dagger:dagger-compiler:2.51.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    // coroutines
+
+    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.aspectj:aspectjweaver")
     implementation("org.apache.commons:commons-lang3")
+
+    // Database
     implementation("com.mysql:mysql-connector-j:9.0.0")
     implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.2")
+
+    // AWS
+    implementation("io.awspring.cloud:spring-cloud-aws-starter")
+    implementation("io.awspring.cloud:spring-cloud-aws-autoconfigure")
+    implementation("com.amazonaws.secretsmanager:aws-secretsmanager-jdbc:2.0.2")
+
+    // Logging and Sentry
     implementation("com.auth0:java-jwt:4.4.0")
     implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.0.0-alpha.4")
     implementation("io.sentry:sentry-logback:8.0.0-alpha.4")
+
+    // OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.6.0")
-    implementation("io.awspring.cloud:spring-cloud-aws-starter:3.2.0-M1")
-    implementation("io.awspring.cloud:spring-cloud-aws-autoconfigure:3.2.0-M1")
-    implementation("com.amazonaws.secretsmanager:aws-secretsmanager-jdbc:2.0.2")
+
+    // Utility
     implementation("org.fusesource.jansi:jansi:2.4.1")
+
+    // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    exclude("**/*")
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "21"
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xuse-k2")
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
@@ -79,12 +101,9 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
         ktlint("1.3.1").editorConfigOverride(
             mapOf(
                 "ktlint_code_style" to "ktlint_official",
-                "ktlint_standard_import-no-wildcard-imports" to "disabled",
-                "ktlint_standard_max-line-length" to "disabled",
                 "ktlint_standard_no-wildcard-imports" to "disabled",
-                "ktlint_standard_value-parameter-comment" to "disabled",
-                "ktlint_standard_enum-entry-name-case" to "disabled",
-                "ktlint_standard_no-consecutive-comments" to "disabled",
+                "ktlint_standard_max-line-length" to "disabled",
+                "ktlint_standard_max-line-length" to "disabled",
             ),
         )
     }
