@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import java.lang.IllegalStateException
 
 @ControllerAdvice
 @RestController
@@ -83,7 +84,7 @@ class ApiExceptionHandler {
             .body(ApiResult.of(e.exceptionCode, e.data))
     }
 
-    @ExceptionHandler(IllegalArgumentException::class)
+    @ExceptionHandler(IllegalArgumentException::class, IllegalStateException::class)
     fun illegalArgumentException(e: IllegalArgumentException?): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
         return ResponseEntity

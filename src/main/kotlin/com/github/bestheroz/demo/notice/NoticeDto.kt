@@ -1,46 +1,55 @@
-package com.github.bestheroz.demo.notice;
+package com.github.bestheroz.demo.notice
 
-import com.github.bestheroz.demo.entity.Notice;
-import com.github.bestheroz.standard.common.dto.IdCreatedUpdatedDto;
-import io.swagger.v3.oas.annotations.media.Schema;
-;
-;
-;
+import com.github.bestheroz.demo.entity.Notice
+import com.github.bestheroz.standard.common.dto.IdCreatedUpdatedDto
+import com.github.bestheroz.standard.common.dto.UserSimpleDto
+import io.swagger.v3.oas.annotations.media.Schema
+import java.time.Instant
 
-public class NoticeDto {
-  
-  
-  public static class Request {
-    @Schema(description = "페이지 번호", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer page;
+class NoticeDto {
+    data class Request(
+        @Schema(description = "페이지 번호", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+        val page: Int,
+        @Schema(description = "페이지 크기", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
+        val pageSize: Int,
+    )
 
-    @Schema(description = "페이지 크기", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer pageSize;
-  }
-
-  
-  
-  public static class Response extends IdCreatedUpdatedDto {
-    @Schema(description = "제목", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String title;
-
-    @Schema(description = "내용", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String content;
-
-    @Schema(description = "사용 여부", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Boolean useFlag;
-
-    public static Response fromEntity(Notice notice) {
-      final Response response = new Response();
-      response.setId(notice.getId());
-      response.setTitle(notice.getTitle());
-      response.setContent(notice.getContent());
-      response.setUseFlag(notice.getUseFlag());
-      response.setCreatedAt(notice.getCreatedAt());
-      response.setCreatedBy(notice.getCreatedBy());
-      response.setUpdatedAt(notice.getUpdatedAt());
-      response.setUpdatedBy(notice.getUpdatedBy());
-      return response;
+    data class Response(
+        @Schema(description = "제목", requiredMode = Schema.RequiredMode.REQUIRED)
+        val title: String,
+        @Schema(description = "내용", requiredMode = Schema.RequiredMode.REQUIRED)
+        val content: String,
+        @Schema(description = "사용 여부", requiredMode = Schema.RequiredMode.REQUIRED)
+        val useFlag: Boolean,
+        @Schema(description = "ID(KEY)", requiredMode = Schema.RequiredMode.REQUIRED)
+        override val id: Long,
+        @Schema(
+            description = "생성일시",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+        )
+        override val createdAt: Instant,
+        @Schema(
+            description = "생성자",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+        )
+        override val createdBy: UserSimpleDto,
+        @Schema(description = "수정일시", requiredMode = Schema.RequiredMode.REQUIRED)
+        override val updatedAt: Instant,
+        @Schema(description = "수정자", requiredMode = Schema.RequiredMode.REQUIRED)
+        override val updatedBy: UserSimpleDto,
+    ) : IdCreatedUpdatedDto(id, createdAt, createdBy, updatedAt, updatedBy) {
+        companion object {
+            fun of(notice: Notice): Response =
+                Response(
+                    id = notice.id!!,
+                    title = notice.title,
+                    content = notice.content,
+                    useFlag = notice.useFlag,
+                    createdAt = notice.createdAt,
+                    createdBy = notice.createdBy,
+                    updatedAt = notice.updatedAt,
+                    updatedBy = notice.updatedBy,
+                )
+        }
     }
-  }
 }

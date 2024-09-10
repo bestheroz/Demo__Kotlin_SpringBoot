@@ -1,169 +1,190 @@
-package com.github.bestheroz.demo.admin;
+package com.github.bestheroz.demo.admin
 
-import com.github.bestheroz.demo.repository.AdminRepository;
-import com.github.bestheroz.standard.common.authenticate.JwtTokenProvider;
-import com.github.bestheroz.standard.common.dto.ListResult;
-import com.github.bestheroz.standard.common.dto.TokenDto;
-import com.github.bestheroz.standard.common.exception.AuthenticationException401;
-import com.github.bestheroz.standard.common.exception.ExceptionCode;
-import com.github.bestheroz.standard.common.exception.RequestException400;
-import com.github.bestheroz.standard.common.security.Operator;
-import com.github.bestheroz.standard.common.util.PasswordUtil;
-import lombok.RequiredArgsConstructor;
-;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import com.github.bestheroz.demo.repository.AdminRepository
+import com.github.bestheroz.standard.common.authenticate.JwtTokenProvider
+import com.github.bestheroz.standard.common.dto.ListResult
+import com.github.bestheroz.standard.common.dto.TokenDto
+import com.github.bestheroz.standard.common.exception.AuthenticationException401
+import com.github.bestheroz.standard.common.exception.ExceptionCode
+import com.github.bestheroz.standard.common.exception.RequestException400
+import com.github.bestheroz.standard.common.log.logger
+import com.github.bestheroz.standard.common.security.Operator
+import com.github.bestheroz.standard.common.util.PasswordUtil.verifyPassword
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional
+class AdminService(
+    private val adminRepository: AdminRepository,
+    private val jwtTokenProvider: JwtTokenProvider,
+) {
+    companion object {
+        private val log = logger()
+    }
 
-public class AdminService {
-  private final AdminRepository adminRepository;
-  private final JwtTokenProvider jwtTokenProvider;
-
-  @Transactional(readOnly = true)
-  public ListResult<AdminDto.Response> getAdminList(AdminDto.Request request) {
-    return ListResult.of(
+    @Transactional(readOnly = true)
+    fun getAdminList(request: AdminDto.Request): ListResult<AdminDto.Response> =
         adminRepository
             .findAllByRemovedFlagIsFalse(
                 PageRequest.of(
-                    request.getPage() - 1, request.getPageSize(), Sort.by("id").descending()))
-            .map(AdminDto.Response::fromEntity));
-  }
+                    request.page - 1,
+                    request.pageSize,
+                    Sort.by("id").descending(),
+                ),
+            ).map(AdminDto.Response::of)
+            .let {
+                ListResult.of(it)
+            }
 
-  @Transactional(readOnly = true)
-  public AdminDto.Response getAdmin(final Long id) {
-    return this.adminRepository
+    @Transactional(readOnly = true)
+    fun getAdmin(id: Long): AdminDto.Response =
+        adminRepository
+            .findById(id)
+            .map(AdminDto.Response::of)
+            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
+
+    fun createAdmin(
+        request: AdminCreateDto.Request,
+        operator: Operator,
+    ): AdminDto.Response {
+        adminRepository
+            .findByLoginIdAndRemovedFlagFalse(
+                request.loginId,
+            ).ifPresent { throw RequestException400(ExceptionCode.ALREADY_JOINED_ACCOUNT) }
+        return adminRepository.save(request.toEntity(operator)).let { AdminDto.Response.of(it) }
+    }
+
+    fun updateAdmin(
+        id: Long,
+        request: AdminUpdateDto.Request,
+        operator: Operator,
+    ): AdminDto.Response =
+        adminRepository
+            .findById(id)
+            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
+            .let { admin ->
+
+                if (admin.removedFlag) {
+                    throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
+                }
+                if (!admin.managerFlag && admin.id == operator.id) {
+                    throw RequestException400(ExceptionCode.CANNOT_UPDATE_YOURSELF)
+                }
+                if (!admin.managerFlag && !request.managerFlag && !operator.managerFlag) {
+                    throw RequestException400(ExceptionCode.UNKNOWN_AUTHORITY)
+                }
+                adminRepository
+                    .findByLoginIdAndRemovedFlagFalseAndIdNot(request.loginId, id)
+                    .ifPresent { throw RequestException400(ExceptionCode.ALREADY_JOINED_ACCOUNT) }
+
+                admin.update(
+                    request.loginId,
+                    request.password,
+                    request.name,
+                    request.useFlag,
+                    request.managerFlag,
+                    request.authorities,
+                    operator,
+                )
+                return AdminDto.Response.of(admin)
+            }
+
+    fun deleteAdmin(
+        id: Long,
+        operator: Operator,
+    ) = adminRepository
         .findById(id)
-        .map(AdminDto.Response::fromEntity)
-        .orElseThrow(() -> new RequestException400(ExceptionCode.UNKNOWN_ADMIN));
-  }
+        .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
+        .let { admin ->
 
-  public AdminDto.Response createAdmin(final AdminCreateDto.Request request, Operator operator) {
-    if (this.adminRepository.findByLoginIdAndRemovedFlagFalse(request.getLoginId()).isPresent()) {
-      throw new RequestException400(ExceptionCode.ALREADY_JOINED_ACCOUNT);
-    }
+            if (admin.removedFlag) throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
+            if (admin.id == operator.id) {
+                throw RequestException400(ExceptionCode.CANNOT_REMOVE_YOURSELF)
+            }
 
-    return AdminDto.Response.fromEntity(this.adminRepository.save(request.toEntity(operator)));
-  }
+            admin.remove(operator)
+        }
 
-  public AdminDto.Response updateAdmin(
-      final Long id, final AdminUpdateDto.Request request, Operator operator) {
-    Admin admin =
-        this.adminRepository
+    fun changePassword(
+        id: Long,
+        request: AdminChangePasswordDto.Request,
+        operator: Operator,
+    ): AdminDto.Response =
+        adminRepository
             .findById(id)
-            .orElseThrow(() -> new RequestException400(ExceptionCode.UNKNOWN_ADMIN));
-    if (admin.getRemovedFlag()) throw new RequestException400(ExceptionCode.UNKNOWN_ADMIN);
-    if (!admin.getManagerFlag() && admin.getId().equals(operator.getId())) {
-      throw new RequestException400(ExceptionCode.CANNOT_UPDATE_YOURSELF);
-    }
-    if (!admin.getManagerFlag() && !request.getManagerFlag() && !operator.getManagerFlag()) {
-      throw new RequestException400(ExceptionCode.UNKNOWN_AUTHORITY);
-    }
+            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
+            .let { admin ->
 
-    if (this.adminRepository
-        .findByLoginIdAndRemovedFlagFalseAndIdNot(request.getLoginId(), id)
-        .isPresent()) {
-      throw new RequestException400(ExceptionCode.ALREADY_JOINED_ACCOUNT);
-    }
+                if (admin.removedFlag) throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
+                if (!verifyPassword(request.oldPassword, admin.password ?: "")) {
+                    log.warn("password not match")
+                    throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
+                }
+                if (admin.password == request.newPassword) {
+                    throw RequestException400(ExceptionCode.CHANGE_TO_SAME_PASSWORD)
+                }
 
-    admin.update(
-        request.getLoginId(),
-        request.getPassword(),
-        request.getName(),
-        request.getUseFlag(),
-        request.getManagerFlag(),
-        request.getAuthorities(),
-        operator);
-    return AdminDto.Response.fromEntity(admin);
-  }
+                admin.changePassword(request.newPassword, operator)
+                return AdminDto.Response.of(admin)
+            }
 
-  public void deleteAdmin(final Long id, Operator operator) {
-    Admin admin =
-        this.adminRepository
+    fun loginAdmin(request: AdminLoginDto.Request): TokenDto =
+        adminRepository
+            .findByLoginIdAndRemovedFlagFalse(request.loginId)
+            .orElseThrow { RequestException400(ExceptionCode.UNJOINED_ACCOUNT) }
+            .let { admin ->
+
+                if (!admin.useFlag) {
+                    throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
+                }
+                if (!verifyPassword(request.password, admin.password ?: "")) {
+                    log.warn("password not match")
+                    throw RequestException400(ExceptionCode.UNKNOWN_ADMIN)
+                }
+                admin.renewToken(jwtTokenProvider.createRefreshToken(Operator(admin)))
+                return TokenDto(jwtTokenProvider.createAccessToken(Operator(admin)), admin.token ?: "")
+            }
+
+    fun renewToken(refreshToken: String): TokenDto =
+        adminRepository
+            .findById(jwtTokenProvider.getId(refreshToken))
+            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
+            .let { admin ->
+                if (admin.removedFlag ||
+                    admin.token == null || !jwtTokenProvider.validateToken(refreshToken)
+                ) {
+                    throw AuthenticationException401()
+                }
+                admin.token?.let {
+                    if (jwtTokenProvider.issuedRefreshTokenIn3Seconds(it)) {
+                        return TokenDto(
+                            jwtTokenProvider.createAccessToken(Operator(admin)),
+                            it,
+                        )
+                    }
+                    if (it == refreshToken) {
+                        admin.renewToken(jwtTokenProvider.createRefreshToken(Operator(admin)))
+                        return TokenDto(
+                            jwtTokenProvider.createAccessToken(Operator(admin)),
+                            it,
+                        )
+                    }
+                }
+                throw AuthenticationException401()
+            }
+
+    fun logout(id: Long) =
+        adminRepository
             .findById(id)
-            .orElseThrow(() -> new RequestException400(ExceptionCode.UNKNOWN_ADMIN));
-    if (admin.getRemovedFlag()) throw new RequestException400(ExceptionCode.UNKNOWN_ADMIN);
-    if (admin.getId().equals(operator.getId())) {
-      throw new RequestException400(ExceptionCode.CANNOT_REMOVE_YOURSELF);
-    }
+            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_ADMIN) }
+            .logout()
 
-    admin.remove(operator);
-  }
-
-  public AdminDto.Response changePassword(
-      final Long id, final AdminChangePasswordDto.Request request, Operator operator) {
-    Admin admin =
-        this.adminRepository
-            .findById(id)
-            .orElseThrow(() -> new RequestException400(ExceptionCode.UNKNOWN_ADMIN));
-    if (admin.getRemovedFlag()) throw new RequestException400(ExceptionCode.UNKNOWN_ADMIN);
-    if (!PasswordUtil.verifyPassword(request.getOldPassword(), admin.getPassword())) {
-      log.warn("password not match");
-      throw new RequestException400(ExceptionCode.UNKNOWN_ADMIN);
-    }
-    if (admin.getPassword().equals(request.getNewPassword())) {
-      throw new RequestException400(ExceptionCode.CHANGE_TO_SAME_PASSWORD);
-    }
-
-    admin.changePassword(request.getNewPassword(), operator);
-    return AdminDto.Response.fromEntity(admin);
-  }
-
-  public TokenDto loginAdmin(AdminLoginDto.Request request) {
-    Admin admin =
-        this.adminRepository
-            .findByLoginIdAndRemovedFlagFalse(request.getLoginId())
-            .orElseThrow(() -> new RequestException400(ExceptionCode.UNJOINED_ACCOUNT));
-    if (!admin.getUseFlag()) {
-      throw new RequestException400(ExceptionCode.UNKNOWN_ADMIN);
-    }
-    if (!PasswordUtil.verifyPassword(request.getPassword(), admin.getPassword())) {
-      log.warn("password not match");
-      throw new RequestException400(ExceptionCode.UNKNOWN_ADMIN);
-    }
-    admin.renewToken(jwtTokenProvider.createRefreshToken(new Operator(admin)));
-    return new TokenDto(jwtTokenProvider.createAccessToken(new Operator(admin)), admin.getToken());
-  }
-
-  public TokenDto renewToken(String refreshToken) {
-    Long id = jwtTokenProvider.getId(refreshToken);
-    Admin admin =
-        this.adminRepository
-            .findById(id)
-            .orElseThrow(() -> new RequestException400(ExceptionCode.UNKNOWN_ADMIN));
-    if (admin.getRemovedFlag()
-        || admin.getToken() == null
-        || !jwtTokenProvider.validateToken(refreshToken)) {
-      throw new AuthenticationException401();
-    }
-    if (admin.getToken() != null
-        && jwtTokenProvider.issuedRefreshTokenIn3Seconds(admin.getToken())) {
-      return new TokenDto(
-          jwtTokenProvider.createAccessToken(new Operator(admin)), admin.getToken());
-    } else if (StringUtils.equals(admin.getToken(), refreshToken)) {
-      admin.renewToken(jwtTokenProvider.createRefreshToken(new Operator(admin)));
-      return new TokenDto(
-          jwtTokenProvider.createAccessToken(new Operator(admin)), admin.getToken());
-    } else {
-      throw new AuthenticationException401();
-    }
-  }
-
-  public void logout(Long id) {
-    Admin admin =
-        this.adminRepository
-            .findById(id)
-            .orElseThrow(() -> new RequestException400(ExceptionCode.UNKNOWN_ADMIN));
-    admin.logout();
-  }
-
-  @Transactional(readOnly = true)
-  public Boolean checkLoginId(String loginId, Long id) {
-    return this.adminRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(loginId, id).isEmpty();
-  }
+    @Transactional(readOnly = true)
+    fun checkLoginId(
+        loginId: String,
+        id: Long?,
+    ): Boolean = adminRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(loginId, id).isEmpty
 }

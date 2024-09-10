@@ -1,5 +1,6 @@
 package com.github.bestheroz.standard.common.dto
 
+import com.github.bestheroz.demo.entity.Admin
 import com.github.bestheroz.demo.entity.User
 import com.github.bestheroz.standard.common.enums.UserTypeEnum
 import io.swagger.v3.oas.annotations.media.Schema
@@ -15,22 +16,20 @@ data class UserSimpleDto(
     val name: String,
 ) {
     companion object {
-        @JvmStatic
-        fun fromEntity(entity: Admin): UserSimpleDto =
+        fun of(entity: Admin): UserSimpleDto =
             UserSimpleDto(
-                entity.getId(),
-                entity.type,
-                entity.getLoginId(),
-                entity.getName(),
+                entity.id!!,
+                entity.getType(),
+                entity.loginId,
+                entity.name,
             )
 
-        @JvmStatic
-        fun fromEntity(entity: User): UserSimpleDto =
+        fun of(entity: User): UserSimpleDto =
             UserSimpleDto(
-                entity.getId(),
-                entity.type,
-                entity.getLoginId(),
-                entity.getName(),
+                entity.id!!,
+                entity.getType(),
+                entity.loginId,
+                entity.name,
             )
     }
 }

@@ -1,125 +1,122 @@
-package com.github.bestheroz.demo.entity;
+package com.github.bestheroz.demo.entity
 
-import com.github.bestheroz.standard.common.entity.IdCreatedUpdated;
-import com.github.bestheroz.standard.common.entity.converter.JsonAttributeConverter;
-import com.github.bestheroz.standard.common.enums.AuthorityEnum;
-import com.github.bestheroz.standard.common.enums.UserTypeEnum;
-import com.github.bestheroz.standard.common.security.Operator;
-import com.github.bestheroz.standard.common.util.PasswordUtil;
-import io.micrometer.common.util.StringUtils;
-import jakarta.persistence.*;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import lombok.*;
-
-
+import com.github.bestheroz.standard.common.entity.IdCreatedUpdated
+import com.github.bestheroz.standard.common.entity.converter.JsonAttributeConverter
+import com.github.bestheroz.standard.common.enums.AuthorityEnum
+import com.github.bestheroz.standard.common.enums.AuthorityEnum.AuthorityEnumListConverter
+import com.github.bestheroz.standard.common.enums.UserTypeEnum
+import com.github.bestheroz.standard.common.security.Operator
+import com.github.bestheroz.standard.common.util.PasswordUtil.getPasswordHash
+import jakarta.persistence.Column
+import jakarta.persistence.Convert
+import jakarta.persistence.DiscriminatorValue
+import jakarta.persistence.Entity
+import java.time.Instant
 
 @Entity
-
 @DiscriminatorValue("user")
-public class User extends IdCreatedUpdated {
-  @Column(nullable = false)
-  private String loginId;
+data class User(
+    @Column(nullable = false)
+    var loginId: String,
+    var password: String? = null,
+    var token: String? = null,
+    @Column(nullable = false)
+    var name: String,
+    @Column(nullable = false)
+    var useFlag: Boolean,
+    @Convert(converter = AuthorityEnumListConverter::class)
+    @Column(columnDefinition = "json", nullable = false)
+    var authorities: List<AuthorityEnum>,
+    var changePasswordAt: Instant? = null,
+    var latestActiveAt: Instant? = null,
+    var joinedAt: Instant? = null,
+    @Convert(converter = JsonAttributeConverter::class)
+    @Column(columnDefinition = "json", nullable = false)
+    var additionalInfo: Map<String, Any>,
+    @Column(nullable = false)
+    var removedFlag: Boolean = false,
+    var removedAt: Instant? = null,
+) : IdCreatedUpdated() {
+    fun getType(): UserTypeEnum = UserTypeEnum.USER
 
-  private String password;
-  private String token;
+    companion object {
+        fun of(
+            loginId: String,
+            password: String,
+            name: String,
+            useFlag: Boolean,
+            authorities: List<AuthorityEnum>,
+            operator: Operator,
+        ) = User(
+            loginId = loginId,
+            name = name,
+            useFlag = useFlag,
+            authorities = authorities,
+            additionalInfo = mapOf(),
+        ).apply {
+            val now = Instant.now()
+            this.password = getPasswordHash(password)
+            this.joinedAt = now
+            this.removedFlag = false
+            this.setCreatedBy(operator, now)
+            this.setUpdatedBy(operator, now)
+        }
 
-  @Column(nullable = false)
-  private String name;
-
-  @Column(nullable = false)
-  private Boolean useFlag;
-
-  @Convert(converter = AuthorityEnum.AuthorityEnumListConverter.class)
-  @Column(columnDefinition = "json", nullable = false)
-  private List<AuthorityEnum> authorities;
-
-  private Instant changePasswordAt;
-  private Instant latestActiveAt;
-
-  private Instant joinedAt;
-
-  @Convert(converter = JsonAttributeConverter.class)
-  @Column(columnDefinition = "json", nullable = false)
-  private Map<String, Object> additionalInfo;
-
-  @Column(nullable = false)
-  private Boolean removedFlag;
-
-  private Instant removedAt;
-
-  public UserTypeEnum type {
-    return UserTypeEnum.USER;
-  }
-
-  public User(
-      String loginId,
-      String password,
-      String name,
-      Boolean useFlag,
-      List<AuthorityEnum> authorities,
-      Operator operator) {
-    Instant now = Instant.now();
-    this.loginId = loginId;
-    this.password = PasswordUtil.getPasswordHash(password);
-    this.name = name;
-    this.useFlag = useFlag;
-    this.authorities = authorities;
-    this.joinedAt = now;
-    this.additionalInfo = Map.of();
-    this.removedFlag = false;
-    this.setCreatedBy(operator, now);
-    this.setUpdatedBy(operator, now);
-  }
-
-  public static User fromOperator(Operator operator) {
-    User user = new User();
-    user.setId(operator.getId());
-    user.setLoginId(operator.getLoginId());
-    user.setName(operator.getName());
-    return user;
-  }
-
-  public void update(
-      String loginId,
-      String password,
-      String name,
-      Boolean useFlag,
-      List<AuthorityEnum> authorities,
-      Operator operator) {
-    this.loginId = loginId;
-    this.name = name;
-    this.useFlag = useFlag;
-    this.authorities = authorities;
-    Instant now = Instant.now();
-    this.setUpdatedBy(operator, now);
-    if (StringUtils.isNotEmpty(password)) {
-      this.password = PasswordUtil.getPasswordHash(password);
-      this.changePasswordAt = now;
+        fun of(operator: Operator) =
+            User(
+                loginId = operator.loginId,
+                name = operator.name,
+                useFlag = false,
+                authorities = listOf(),
+                additionalInfo = mapOf(),
+            ).apply {
+                this.id = operator.id
+            }
     }
-  }
 
-  public void changePassword(String password, Operator operator) {
-    this.password = PasswordUtil.getPasswordHash(password);
-    Instant now = Instant.now();
-    this.changePasswordAt = now;
-    this.setUpdatedBy(operator, now);
-  }
+    fun update(
+        loginId: String,
+        password: String?,
+        name: String,
+        useFlag: Boolean,
+        authorities: List<AuthorityEnum>,
+        operator: Operator,
+    ) {
+        this.loginId = loginId
+        this.name = name
+        this.useFlag = useFlag
+        this.authorities = authorities
+        val now = Instant.now()
+        this.setUpdatedBy(operator, now)
+        password?.let {
+            this.password = getPasswordHash(it)
+            this.changePasswordAt = now
+        }
+    }
 
-  public void remove(Operator operator) {
-    this.removedFlag = true;
-    Instant now = Instant.now();
-    this.removedAt = now;
-    this.setUpdatedBy(operator, now);
-  }
+    fun changePassword(
+        password: String,
+        operator: Operator,
+    ) {
+        this.password = getPasswordHash(password)
+        val now = Instant.now()
+        this.changePasswordAt = now
+        this.setUpdatedBy(operator, now)
+    }
 
-  public void renewToken(String token) {
-    this.token = token;
-    this.latestActiveAt = Instant.now();
-  }
+    fun remove(operator: Operator) {
+        this.removedFlag = true
+        val now = Instant.now()
+        this.removedAt = now
+        this.setUpdatedBy(operator, now)
+    }
 
-  public void logout() {
-    this.token = null;
-  }
+    fun renewToken(token: String?) {
+        this.token = token
+        this.latestActiveAt = Instant.now()
+    }
+
+    fun logout() {
+        this.token = null
+    }
 }

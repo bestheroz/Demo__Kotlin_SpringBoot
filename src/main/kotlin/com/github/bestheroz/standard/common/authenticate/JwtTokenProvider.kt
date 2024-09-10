@@ -21,8 +21,8 @@ import java.util.*
 @Component
 class JwtTokenProvider(
     @Value("\${jwt.secret}") secret: String,
-    @param:Value("\${jwt.access-token-expiration-minutes}") private val accessTokenExpirationMinutes: Long,
-    @param:Value("\${jwt.refresh-token-expiration-minutes}") private val refreshTokenExpirationMinutes: Long,
+    @Value("\${jwt.access-token-expiration-minutes}") private val accessTokenExpirationMinutes: Long,
+    @Value("\${jwt.refresh-token-expiration-minutes}") private val refreshTokenExpirationMinutes: Long,
 ) {
     companion object {
         private val log = logger()

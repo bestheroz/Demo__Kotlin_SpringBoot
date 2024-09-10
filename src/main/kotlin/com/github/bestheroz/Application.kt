@@ -7,8 +7,8 @@ import org.springframework.boot.runApplication
 
 @OpenAPIDefinition(servers = [Server(url = "/", description = "Default Server URL")])
 @SpringBootApplication
-class Application {
-    fun main(args: Array<String>) {
-        runApplication<Application>(*args)
-    }
+class Application
+
+fun main(args: Array<String>) {
+    runApplication<Application>(*args)
 }

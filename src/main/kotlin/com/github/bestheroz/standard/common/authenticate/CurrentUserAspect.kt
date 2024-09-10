@@ -15,7 +15,7 @@ class CurrentUserAspect {
     @Throws(
         Throwable::class,
     )
-    fun checkCurrentUser(joinPoint: ProceedingJoinPoint): Any {
+    fun checkCurrentUser(joinPoint: ProceedingJoinPoint): Any? {
         val authentication = SecurityContextHolder.getContext().authentication
         if (!authentication.isAuthenticated || authentication.principal == null) {
             throw AuthenticationException401(ExceptionCode.EXPIRED_TOKEN)

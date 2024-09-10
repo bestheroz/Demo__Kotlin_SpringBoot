@@ -27,7 +27,7 @@ class TraceLogger(
             "execution(!private * com.github.bestheroz..*Repository.*(..))",
     )
     @Throws(Throwable::class)
-    fun writeLog(pjp: ProceedingJoinPoint): Any {
+    fun writeLog(pjp: ProceedingJoinPoint): Any? {
         val signature =
             pjp.staticPart.signature.toString().removePrefix(
                 pjp.staticPart.signature.declaringType.`package`.name + ".",
@@ -50,12 +50,16 @@ class TraceLogger(
                     }
                 }
                 !signature.contains("HealthController") -> {
-                    val str = objectMapper.writeValueAsString(retVal)
+                    println("retVal: $retVal")
                     log.info(
                         STR_END_EXECUTE_TIME,
                         signature,
                         stopWatch.time,
-                        str.abbreviate(1000, "--skip massive text-- total length : ${str.length}"),
+                        retVal?.let {
+                            val str = objectMapper.writeValueAsString(retVal)
+                            println("str = $str")
+                            str.abbreviate(1000, "--skip massive text-- total length : ${str.length}")
+                        } ?: "null",
                     )
                 }
             }

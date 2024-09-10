@@ -1,68 +1,71 @@
-package com.github.bestheroz.demo.admin;
+package com.github.bestheroz.demo.admin
 
-import com.github.bestheroz.standard.common.dto.IdCreatedUpdatedDto;
-import com.github.bestheroz.standard.common.enums.AuthorityEnum;
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.Instant;
-import java.util.List;
-;
-;
-;
+import com.github.bestheroz.demo.entity.Admin
+import com.github.bestheroz.standard.common.dto.IdCreatedUpdatedDto
+import com.github.bestheroz.standard.common.dto.UserSimpleDto
+import com.github.bestheroz.standard.common.enums.AuthorityEnum
+import io.swagger.v3.oas.annotations.media.Schema
+import java.time.Instant
 
-public class AdminDto {
+class AdminDto {
+    data class Request(
+        @Schema(description = "페이지 번호", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+        val page: Int,
+        @Schema(description = "페이지 크기", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
+        val pageSize: Int,
+    )
 
-
-  public static class Request {
-    @Schema(description = "페이지 번호", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer page;
-
-    @Schema(description = "페이지 크기", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer pageSize;
-  }
-
-
-
-  public static class Response extends IdCreatedUpdatedDto {
-    @Schema(description = "로그인 아이디", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String loginId;
-
-    @Schema(description = "관리자 이름", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String name;
-
-    @Schema(description = "사용 여부", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Boolean useFlag = true;
-
-    @Schema(description = "매니저 여부(모든 권한 소유)", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Boolean managerFlag;
-
-    @Schema(description = "권한 목록", requiredMode = Schema.RequiredMode.REQUIRED)
-    private List<AuthorityEnum> authorities;
-
-    @Schema(description = "가입 일시", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Instant joinedAt;
-
-    @Schema(description = "최근 활동 일시", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private Instant latestActiveAt;
-
-    @Schema(description = "비밀번호 변경 일시", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private Instant changePasswordAt;
-
-    public static Response fromEntity(Admin admin) {
-      final Response response = new Response();
-      response.setId(admin.getId());
-      response.setLoginId(admin.getLoginId());
-      response.setName(admin.getName());
-      response.setUseFlag(admin.getUseFlag());
-      response.setManagerFlag(admin.getManagerFlag());
-      response.setAuthorities(admin.getAuthorities());
-      response.setJoinedAt(admin.getJoinedAt());
-      response.setLatestActiveAt(admin.getLatestActiveAt());
-      response.setChangePasswordAt(admin.getChangePasswordAt());
-      response.setCreatedAt(admin.getCreatedAt());
-      response.setCreatedBy(admin.getCreatedBy());
-      response.setUpdatedAt(admin.getUpdatedAt());
-      response.setUpdatedBy(admin.getUpdatedBy());
-      return response;
+    data class Response(
+        @Schema(description = "로그인 아이디", requiredMode = Schema.RequiredMode.REQUIRED)
+        val loginId: String,
+        @Schema(description = "관리자 이름", requiredMode = Schema.RequiredMode.REQUIRED)
+        val name: String,
+        @Schema(description = "사용 여부", requiredMode = Schema.RequiredMode.REQUIRED)
+        val useFlag: Boolean,
+        @Schema(description = "매니저 여부(모든 권한 소유)", requiredMode = Schema.RequiredMode.REQUIRED)
+        val managerFlag: Boolean,
+        @Schema(description = "권한 목록", requiredMode = Schema.RequiredMode.REQUIRED)
+        val authorities: List<AuthorityEnum>,
+        @Schema(description = "가입 일시", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        val joinedAt: Instant? = null,
+        @Schema(description = "최근 활동 일시", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        val latestActiveAt: Instant? = null,
+        @Schema(description = "비밀번호 변경 일시", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        val changePasswordAt: Instant? = null,
+        @Schema(description = "ID(KEY)", requiredMode = Schema.RequiredMode.REQUIRED)
+        override val id: Long,
+        @Schema(
+            description = "생성일시",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+        )
+        override val createdAt: Instant,
+        @Schema(
+            description = "생성자",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+        )
+        override val createdBy: UserSimpleDto,
+        @Schema(description = "수정일시", requiredMode = Schema.RequiredMode.REQUIRED)
+        override val updatedAt: Instant,
+        @Schema(description = "수정자", requiredMode = Schema.RequiredMode.REQUIRED)
+        override val updatedBy: UserSimpleDto,
+    ) : IdCreatedUpdatedDto(id, createdAt, createdBy, updatedAt, updatedBy) {
+        companion object {
+            fun of(admin: Admin): Response =
+                Response(
+                    id = admin.id!!,
+                    loginId = admin.loginId,
+                    name = admin.name,
+                    useFlag = admin.useFlag,
+                    managerFlag = admin.managerFlag,
+                    authorities = admin.authorities,
+                    joinedAt = admin.joinedAt,
+                    latestActiveAt = admin.latestActiveAt,
+                    changePasswordAt = admin.changePasswordAt,
+                    createdAt = admin.createdAt,
+                    createdBy = admin.createdBy,
+                    updatedAt = admin.updatedAt,
+                    updatedBy = admin.updatedBy,
+                )
+        }
     }
-  }
 }

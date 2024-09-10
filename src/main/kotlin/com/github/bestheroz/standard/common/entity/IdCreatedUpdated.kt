@@ -9,13 +9,14 @@ import jakarta.persistence.*
 import java.time.Instant
 
 @MappedSuperclass
-open class IdCreatedUpdated : IdCreated() {
-    @Column(name = "updated_object_type")
-    var updatedObjectType: UserTypeEnum? = null
+abstract class IdCreatedUpdated : IdCreated() {
+    @Column(nullable = false)
+    lateinit var updatedObjectType: UserTypeEnum
 
-    var updatedAt: Instant? = null
+    @Column(nullable = false)
+    lateinit var updatedAt: Instant
 
-    @Column(name = "updated_object_id")
+    @Column(name = "updated_object_id", nullable = false)
     var updatedObjectId: Long? = null
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,11 +44,11 @@ open class IdCreatedUpdated : IdCreated() {
         when (operator.type) {
             UserTypeEnum.ADMIN -> {
                 updatedObjectType = UserTypeEnum.ADMIN
-                updatedByAdmin = Admin.fromOperator(operator)
+                updatedByAdmin = Admin.of(operator)
             }
             UserTypeEnum.USER -> {
                 updatedObjectType = UserTypeEnum.USER
-                updatedByUser = User.fromOperator(operator)
+                updatedByUser = User.of(operator)
             }
         }
         updatedAt = instant
@@ -58,8 +59,7 @@ open class IdCreatedUpdated : IdCreated() {
     val updatedBy: UserSimpleDto
         get() =
             when (updatedObjectType) {
-                UserTypeEnum.ADMIN -> UserSimpleDto.fromEntity(updatedByAdmin!!)
-                UserTypeEnum.USER -> UserSimpleDto.fromEntity(updatedByUser!!)
-                else -> throw IllegalStateException("Unknown user type")
+                UserTypeEnum.ADMIN -> UserSimpleDto.of(updatedByAdmin!!)
+                UserTypeEnum.USER -> UserSimpleDto.of(updatedByUser!!)
             }
 }

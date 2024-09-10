@@ -76,11 +76,21 @@ tasks.bootJar {
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     kotlin {
-        ktlint("1.3.1")
+        ktlint("1.3.1").editorConfigOverride(
+            mapOf(
+                "ktlint_code_style" to "ktlint_official",
+                "ktlint_standard_import-no-wildcard-imports" to "disabled",
+                "ktlint_standard_max-line-length" to "disabled",
+                "ktlint_standard_no-wildcard-imports" to "disabled",
+                "ktlint_standard_value-parameter-comment" to "disabled",
+                "ktlint_standard_enum-entry-name-case" to "disabled",
+                "ktlint_standard_no-consecutive-comments" to "disabled",
+            ),
+        )
     }
+
     kotlinGradle {
-        target("*.gradle.kts")
-        ktlint()
+        ktlint("1.3.1")
     }
 }
 

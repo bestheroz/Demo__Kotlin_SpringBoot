@@ -4,7 +4,7 @@ import com.github.bestheroz.standard.common.entity.IdCreatedUpdated
 import com.github.bestheroz.standard.common.enums.AuthorityEnum
 import com.github.bestheroz.standard.common.enums.UserTypeEnum
 import com.github.bestheroz.standard.common.security.Operator
-import com.github.bestheroz.standard.common.util.PasswordUtil
+import com.github.bestheroz.standard.common.util.PasswordUtil.getPasswordHash
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
 import jakarta.persistence.DiscriminatorValue
@@ -13,38 +13,28 @@ import java.time.Instant
 
 @Entity
 @DiscriminatorValue("admin")
-class Admin : IdCreatedUpdated {
+data class Admin(
     @Column(nullable = false)
-    var loginId: String
-
-    var password: String? = null
-    var token: String? = null
-
+    var loginId: String,
+    var password: String? = null,
+    var token: String? = null,
     @Column(nullable = false)
-    var name: String
-
+    var name: String,
     @Column(nullable = false)
-    var useFlag: Boolean
-
+    var useFlag: Boolean,
     @Column(nullable = false)
-    var managerFlag: Boolean
-
+    var managerFlag: Boolean,
     @Convert(converter = AuthorityEnum.AuthorityEnumListConverter::class)
-    @Column(columnDefinition = "json", nullable = false)
-    private var _authorities: List<AuthorityEnum>
-
-    var changePasswordAt: Instant? = null
-    var latestActiveAt: Instant? = null
-
-    var joinedAt: Instant? = null
-
+    @Column(name = "authorities", columnDefinition = "json", nullable = false)
+    var _authorities: List<AuthorityEnum>,
+    var changePasswordAt: Instant? = null,
+    var latestActiveAt: Instant? = null,
+    var joinedAt: Instant? = null,
     @Column(nullable = false)
-    var removedFlag: Boolean = false
-
-    var removedAt: Instant? = null
-
-    val type: UserTypeEnum
-        get() = UserTypeEnum.ADMIN
+    var removedFlag: Boolean = false,
+    var removedAt: Instant? = null,
+) : IdCreatedUpdated() {
+    fun getType(): UserTypeEnum = UserTypeEnum.ADMIN
 
     var authorities: List<AuthorityEnum>
         get() = if (managerFlag) AuthorityEnum.entries else _authorities
@@ -52,50 +42,40 @@ class Admin : IdCreatedUpdated {
             _authorities = value
         }
 
-    constructor(
-        loginId: String,
-        password: String,
-        name: String,
-        useFlag: Boolean,
-        managerFlag: Boolean,
-        authorities: List<AuthorityEnum>,
-        operator: Operator,
-    ) {
-        val now = Instant.now()
-        this.loginId = loginId
-        this.password = PasswordUtil.getPasswordHash(password)
-        this.name = name
-        this.useFlag = useFlag
-        this.managerFlag = managerFlag
-        this._authorities = authorities
-        this.joinedAt = now
-        this.removedFlag = false
-        setCreatedBy(operator, now)
-        setUpdatedBy(operator, now)
-    }
-
-    constructor(
-        id: Long,
-        loginId: String,
-        name: String,
-        managerFlag: Boolean,
-    ) {
-        this.id = id
-        this.loginId = loginId
-        this.name = name
-        this.useFlag = false
-        this.managerFlag = managerFlag
-        this._authorities = emptyList()
-    }
-
     companion object {
-        fun fromOperator(operator: Operator) =
+        fun of(
+            loginId: String,
+            password: String,
+            name: String,
+            useFlag: Boolean,
+            managerFlag: Boolean,
+            authorities: List<AuthorityEnum>,
+            operator: Operator,
+        ) = Admin(
+            loginId = loginId,
+            name = name,
+            useFlag = useFlag,
+            managerFlag = managerFlag,
+            _authorities = authorities,
+        ).apply {
+            this.password = getPasswordHash(password)
+            val now = Instant.now()
+            this.joinedAt = now
+            this.removedFlag = false
+            this.setCreatedBy(operator, now)
+            this.setUpdatedBy(operator, now)
+        }
+
+        fun of(operator: Operator) =
             Admin(
-                operator.id,
-                operator.loginId,
-                operator.name,
-                operator.managerFlag,
-            )
+                loginId = operator.loginId,
+                name = operator.name,
+                useFlag = false,
+                managerFlag = operator.managerFlag,
+                _authorities = emptyList(),
+            ).apply {
+                this.id = operator.id
+            }
     }
 
     fun update(
@@ -111,11 +91,11 @@ class Admin : IdCreatedUpdated {
         this.name = name
         this.useFlag = useFlag
         this.managerFlag = managerFlag
-        this._authorities = authorities
+        this.authorities = authorities
         val now = Instant.now()
         setUpdatedBy(operator, now)
-        if (!password.isNullOrEmpty()) {
-            this.password = PasswordUtil.getPasswordHash(password)
+        password?.let {
+            this.password = getPasswordHash(password)
             this.changePasswordAt = now
         }
     }
@@ -124,7 +104,7 @@ class Admin : IdCreatedUpdated {
         password: String,
         operator: Operator,
     ) {
-        this.password = PasswordUtil.getPasswordHash(password)
+        this.password = getPasswordHash(password)
         val now = Instant.now()
         this.changePasswordAt = now
         setUpdatedBy(operator, now)

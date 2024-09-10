@@ -1,160 +1,188 @@
-package com.github.bestheroz.demo.user;
+package com.github.bestheroz.demo.user
 
-import com.github.bestheroz.demo.entity.User;
-import com.github.bestheroz.demo.repository.UserRepository;
-import com.github.bestheroz.standard.common.authenticate.JwtTokenProvider;
-import com.github.bestheroz.standard.common.dto.ListResult;
-import com.github.bestheroz.standard.common.dto.TokenDto;
-import com.github.bestheroz.standard.common.exception.AuthenticationException401;
-import com.github.bestheroz.standard.common.exception.ExceptionCode;
-import com.github.bestheroz.standard.common.exception.RequestException400;
-import com.github.bestheroz.standard.common.security.Operator;
-import com.github.bestheroz.standard.common.util.PasswordUtil;
-import lombok.RequiredArgsConstructor;
-;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import com.github.bestheroz.demo.repository.UserRepository
+import com.github.bestheroz.standard.common.authenticate.JwtTokenProvider
+import com.github.bestheroz.standard.common.dto.ListResult
+import com.github.bestheroz.standard.common.dto.TokenDto
+import com.github.bestheroz.standard.common.exception.AuthenticationException401
+import com.github.bestheroz.standard.common.exception.ExceptionCode
+import com.github.bestheroz.standard.common.exception.RequestException400
+import com.github.bestheroz.standard.common.log.logger
+import com.github.bestheroz.standard.common.security.Operator
+import com.github.bestheroz.standard.common.util.PasswordUtil.verifyPassword
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional
+class UserService(
+    private val userRepository: UserRepository,
+    private val jwtTokenProvider: JwtTokenProvider,
+) {
+    companion object {
+        private val log = logger()
+    }
 
-public class UserService {
-  private final UserRepository userRepository;
-  private final JwtTokenProvider jwtTokenProvider;
-
-  @Transactional(readOnly = true)
-  public ListResult<UserDto.Response> getUserList(UserDto.Request request) {
-    return ListResult.of(
+    @Transactional(readOnly = true)
+    fun getUserList(request: UserDto.Request): ListResult<UserDto.Response> =
         userRepository
             .findAllByRemovedFlagIsFalse(
                 PageRequest.of(
-                    request.getPage() - 1, request.getPageSize(), Sort.by("id").descending()))
-            .map(UserDto.Response::fromEntity));
-  }
+                    request.page - 1,
+                    request.pageSize,
+                    Sort.by("id").descending(),
+                ),
+            ).map(UserDto.Response::of)
+            .let {
+                ListResult.of(
+                    it,
+                )
+            }
 
-  @Transactional(readOnly = true)
-  public UserDto.Response getUser(final Long id) {
-    return this.userRepository
+    @Transactional(readOnly = true)
+    fun getUser(id: Long): UserDto.Response =
+        userRepository
+            .findById(id)
+            .map(UserDto.Response::of)
+            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
+
+    fun createUser(
+        request: UserCreateDto.Request,
+        operator: Operator,
+    ): UserDto.Response {
+        userRepository.findByLoginIdAndRemovedFlagFalse(request.loginId).ifPresent {
+            throw RequestException400(ExceptionCode.ALREADY_JOINED_ACCOUNT)
+        }
+        return UserDto.Response.of(userRepository.save(request.toEntity(operator)))
+    }
+
+    fun updateUser(
+        id: Long,
+        request: UserUpdateDto.Request,
+        operator: Operator,
+    ): UserDto.Response =
+        userRepository
+            .findById(id)
+            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
+            .let { user ->
+                if (user.removedFlag) throw RequestException400(ExceptionCode.UNKNOWN_USER)
+
+                userRepository
+                    .findByLoginIdAndRemovedFlagFalseAndIdNot(
+                        request.loginId,
+                        id,
+                    ).ifPresent { throw RequestException400(ExceptionCode.ALREADY_JOINED_ACCOUNT) }
+
+                user.update(
+                    request.loginId,
+                    request.password,
+                    request.name,
+                    request.useFlag,
+                    request.authorities,
+                    operator,
+                )
+                return UserDto.Response.of(user)
+            }
+
+    fun deleteUser(
+        id: Long,
+        operator: Operator,
+    ) = userRepository
         .findById(id)
-        .map(UserDto.Response::fromEntity)
-        .orElseThrow(() -> new RequestException400(ExceptionCode.UNKNOWN_USER));
-  }
+        .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
+        .let { user ->
 
-  public UserDto.Response createUser(final UserCreateDto.Request request, Operator operator) {
-    if (this.userRepository.findByLoginIdAndRemovedFlagFalse(request.getLoginId()).isPresent()) {
-      throw new RequestException400(ExceptionCode.ALREADY_JOINED_ACCOUNT);
-    }
+            if (user.removedFlag) throw RequestException400(ExceptionCode.UNKNOWN_USER)
+            if (user.id == operator.id) {
+                throw RequestException400(ExceptionCode.CANNOT_REMOVE_YOURSELF)
+            }
 
-    return UserDto.Response.fromEntity(this.userRepository.save(request.toEntity(operator)));
-  }
+            user.remove(operator)
+        }
 
-  public UserDto.Response updateUser(
-      final Long id, final UserUpdateDto.Request request, Operator operator) {
-    User user =
-        this.userRepository
+    fun changePassword(
+        id: Long,
+        request: UserChangePasswordDto.Request,
+        operator: Operator,
+    ): UserDto.Response =
+        userRepository
             .findById(id)
-            .orElseThrow(() -> new RequestException400(ExceptionCode.UNKNOWN_USER));
-    if (user.getRemovedFlag()) throw new RequestException400(ExceptionCode.UNKNOWN_USER);
+            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
+            .let { user ->
 
-    if (this.userRepository
-        .findByLoginIdAndRemovedFlagFalseAndIdNot(request.getLoginId(), id)
-        .isPresent()) {
-      throw new RequestException400(ExceptionCode.ALREADY_JOINED_ACCOUNT);
-    }
+                if (user.removedFlag) throw RequestException400(ExceptionCode.UNKNOWN_USER)
+                if (!verifyPassword(request.oldPassword, user.password ?: "")) {
+                    log.warn("password not match")
+                    throw RequestException400(ExceptionCode.UNKNOWN_USER)
+                }
+                if (user.password == request.newPassword) {
+                    throw RequestException400(ExceptionCode.CHANGE_TO_SAME_PASSWORD)
+                }
 
-    user.update(
-        request.getLoginId(),
-        request.getPassword(),
-        request.getName(),
-        request.getUseFlag(),
-        request.getAuthorities(),
-        operator);
-    return UserDto.Response.fromEntity(user);
-  }
+                user.changePassword(request.newPassword, operator)
+                return UserDto.Response.of(user)
+            }
 
-  public void deleteUser(final Long id, Operator operator) {
-    User user =
-        this.userRepository
+    fun loginUser(request: UserLoginDto.Request): TokenDto =
+        userRepository
+            .findByLoginIdAndRemovedFlagFalse(request.loginId)
+            .orElseThrow<RequestException400> { RequestException400(ExceptionCode.UNJOINED_ACCOUNT) }
+            .let { user ->
+
+                if (!user.useFlag) {
+                    throw RequestException400(ExceptionCode.UNKNOWN_USER)
+                }
+                if (!verifyPassword(request.password, user.password ?: "")) {
+                    log.warn("password not match")
+                    throw RequestException400(ExceptionCode.UNKNOWN_USER)
+                }
+                user.renewToken(jwtTokenProvider.createRefreshToken(Operator(user)))
+                return TokenDto(
+                    jwtTokenProvider.createAccessToken(Operator(user)),
+                    user.token!!,
+                )
+            }
+
+    fun renewToken(refreshToken: String): TokenDto =
+        userRepository
+            .findById(jwtTokenProvider.getId(refreshToken))
+            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
+            .let { user ->
+                if (user.removedFlag ||
+                    user.token == null ||
+                    !jwtTokenProvider.validateToken(refreshToken)
+                ) {
+                    throw AuthenticationException401()
+                }
+                user.token?.let {
+                    if (jwtTokenProvider.issuedRefreshTokenIn3Seconds(it)) {
+                        return TokenDto(
+                            jwtTokenProvider.createAccessToken(Operator(user)),
+                            it,
+                        )
+                    } else if (it == refreshToken) {
+                        user.renewToken(jwtTokenProvider.createRefreshToken(Operator(user)))
+                        return TokenDto(
+                            jwtTokenProvider.createAccessToken(Operator(user)),
+                            it,
+                        )
+                    }
+                }
+                throw AuthenticationException401()
+            }
+
+    fun logout(id: Long) {
+        userRepository
             .findById(id)
-            .orElseThrow(() -> new RequestException400(ExceptionCode.UNKNOWN_USER));
-    if (user.getRemovedFlag()) throw new RequestException400(ExceptionCode.UNKNOWN_USER);
-    if (user.getId().equals(operator.getId())) {
-      throw new RequestException400(ExceptionCode.CANNOT_REMOVE_YOURSELF);
+            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
+            .logout()
     }
 
-    user.remove(operator);
-  }
-
-  public UserDto.Response changePassword(
-      final Long id, final UserChangePasswordDto.Request request, Operator operator) {
-    User user =
-        this.userRepository
-            .findById(id)
-            .orElseThrow(() -> new RequestException400(ExceptionCode.UNKNOWN_USER));
-    if (user.getRemovedFlag()) throw new RequestException400(ExceptionCode.UNKNOWN_USER);
-    if (!PasswordUtil.verifyPassword(request.getOldPassword(), user.getPassword())) {
-      log.warn("password not match");
-      throw new RequestException400(ExceptionCode.UNKNOWN_USER);
-    }
-    if (user.getPassword().equals(request.getNewPassword())) {
-      throw new RequestException400(ExceptionCode.CHANGE_TO_SAME_PASSWORD);
-    }
-
-    user.changePassword(request.getNewPassword(), operator);
-    return UserDto.Response.fromEntity(user);
-  }
-
-  public TokenDto loginUser(UserLoginDto.Request request) {
-    User user =
-        this.userRepository
-            .findByLoginIdAndRemovedFlagFalse(request.getLoginId())
-            .orElseThrow(() -> new RequestException400(ExceptionCode.UNJOINED_ACCOUNT));
-    if (!user.getUseFlag()) {
-      throw new RequestException400(ExceptionCode.UNKNOWN_USER);
-    }
-    if (!PasswordUtil.verifyPassword(request.getPassword(), user.getPassword())) {
-      log.warn("password not match");
-      throw new RequestException400(ExceptionCode.UNKNOWN_USER);
-    }
-    user.renewToken(jwtTokenProvider.createRefreshToken(new Operator(user)));
-    return new TokenDto(jwtTokenProvider.createAccessToken(new Operator(user)), user.getToken());
-  }
-
-  public TokenDto renewToken(String refreshToken) {
-    Long id = jwtTokenProvider.getId(refreshToken);
-    User user =
-        this.userRepository
-            .findById(id)
-            .orElseThrow(() -> new RequestException400(ExceptionCode.UNKNOWN_USER));
-    if (user.getRemovedFlag()
-        || user.getToken() == null
-        || !jwtTokenProvider.validateToken(refreshToken)) {
-      throw new AuthenticationException401();
-    }
-    if (user.getToken() != null && jwtTokenProvider.issuedRefreshTokenIn3Seconds(user.getToken())) {
-      return new TokenDto(jwtTokenProvider.createAccessToken(new Operator(user)), user.getToken());
-    } else if (StringUtils.equals(user.getToken(), refreshToken)) {
-      user.renewToken(jwtTokenProvider.createRefreshToken(new Operator(user)));
-      return new TokenDto(jwtTokenProvider.createAccessToken(new Operator(user)), user.getToken());
-    } else {
-      throw new AuthenticationException401();
-    }
-  }
-
-  public void logout(Long id) {
-    User user =
-        this.userRepository
-            .findById(id)
-            .orElseThrow(() -> new RequestException400(ExceptionCode.UNKNOWN_USER));
-    user.logout();
-  }
-
-  @Transactional(readOnly = true)
-  public Boolean checkLoginId(String loginId, Long id) {
-    return this.userRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(loginId, id).isEmpty();
-  }
+    @Transactional(readOnly = true)
+    fun checkLoginId(
+        loginId: String,
+        id: Long?,
+    ): Boolean = userRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(loginId, id).isEmpty
 }
