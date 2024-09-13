@@ -32,10 +32,11 @@ dependencyManagement {
 
 dependencies {
     // Kotlin
-    implementation(kotlin("reflect"))
+    implementation(kotlin("noarg"))
     implementation(kotlin("stdlib"))
-    implementation("com.google.dagger:dagger-compiler:2.51.1")
-    ksp("com.google.dagger:dagger-compiler:2.51.1")
+    implementation(kotlin("reflect"))
+    implementation("com.google.dagger:dagger-compiler:2.52")
+    ksp("com.google.dagger:dagger-compiler:2.52")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
@@ -115,6 +116,6 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
 
 configurations {
     compileOnly {
-        extendsFrom(configurations.annotationProcessor.get())
+        extendsFrom(configurations["annotationProcessor"])
     }
 }
