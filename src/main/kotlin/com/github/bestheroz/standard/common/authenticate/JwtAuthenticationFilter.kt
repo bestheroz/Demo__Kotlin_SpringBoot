@@ -74,13 +74,13 @@ class JwtAuthenticationFilter(
             val token = jwtTokenProvider.resolveAccessToken(request)
             if (token == null) {
                 log.info("No access token found")
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No access token found")
+                response.status = HttpServletResponse.SC_UNAUTHORIZED
                 return
             }
 
             if (!jwtTokenProvider.validateToken(token)) {
                 log.info("Invalid access token - refresh token required")
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid access token")
+                response.status = HttpServletResponse.SC_UNAUTHORIZED
                 return
             }
 
