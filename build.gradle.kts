@@ -17,7 +17,10 @@ plugins {
 
 group = "com.github.bestheroz"
 version = "0.0.1-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_21
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
 
 repositories {
     mavenCentral()
@@ -82,6 +85,9 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
+kotlin {
+    jvmToolchain(21)
+}
 tasks.withType<KotlinCompile> {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict", "-Xuse-k2")
