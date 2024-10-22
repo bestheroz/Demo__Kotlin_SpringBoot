@@ -2,15 +2,15 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val kotlinVersion = "2.0.21"
+    val kotlinVersion = "2.1.0-Beta2"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("com.google.devtools.ksp") version "2.0.21-1.0.25"
+    id("com.google.devtools.ksp") version "2.1.0-Beta2-1.0.25"
     id("org.springframework.boot") version "3.3.4"
     id("io.spring.dependency-management") version "1.1.6"
-    id("com.diffplug.spotless") version "7.0.0.BETA2"
+    id("com.diffplug.spotless") version "7.0.0.BETA3"
     id("com.github.ben-manes.versions") version "0.51.0"
     idea
 }
@@ -56,7 +56,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3")
 
     // Database
-    implementation("com.mysql:mysql-connector-j:9.0.0")
+    implementation("com.mysql:mysql-connector-j:9.1.0")
     implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.2")
 
     // AWS
@@ -66,8 +66,8 @@ dependencies {
 
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.4.0")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.0.0-alpha.4")
-    implementation("io.sentry:sentry-logback:8.0.0-alpha.4")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.0.0-beta.1")
+    implementation("io.sentry:sentry-logback:8.0.0-beta.1")
 
     // OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
@@ -90,7 +90,7 @@ kotlin {
 }
 tasks.withType<KotlinCompile> {
     compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xuse-k2")
+        freeCompilerArgs.addAll("-Xjsr305=strict")
         jvmTarget.set(JvmTarget.JVM_21)
     }
 }
