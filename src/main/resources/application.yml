@@ -63,8 +63,6 @@ spring:
     hikari:
       maximum-pool-size: 3
       minimum-idle: 2
-server:
-  port: 8000
 sentry:
   logging:
     enabled: false
