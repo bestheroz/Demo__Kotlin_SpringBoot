@@ -4,7 +4,7 @@ import com.github.bestheroz.demo.entity.Notice
 import com.github.bestheroz.demo.repository.NoticeRepository
 import com.github.bestheroz.standard.common.dto.ListResult
 import com.github.bestheroz.standard.common.exception.ExceptionCode
-import com.github.bestheroz.standard.common.exception.RequestException400
+import com.github.bestheroz.standard.common.exception.BadRequest400Exception
 import com.github.bestheroz.standard.common.security.Operator
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -35,7 +35,7 @@ class NoticeService(
         noticeRepository
             .findById(id)
             .map(NoticeDto.Response::of)
-            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_NOTICE) }
+            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE) }
 
     fun createNotice(
         request: NoticeCreateDto.Request,
@@ -57,7 +57,7 @@ class NoticeService(
                     operator,
                 )
                 notice
-            }.orElseThrow { RequestException400(ExceptionCode.UNKNOWN_NOTICE) }
+            }.orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE) }
             .let {
                 NoticeDto.Response.of(it)
             }
@@ -67,6 +67,6 @@ class NoticeService(
         operator: Operator,
     ) = noticeRepository
         .findById(id)
-        .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_NOTICE) }
+        .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE) }
         .remove(operator)
 }

@@ -4,9 +4,9 @@ import com.github.bestheroz.demo.repository.UserRepository
 import com.github.bestheroz.standard.common.authenticate.JwtTokenProvider
 import com.github.bestheroz.standard.common.dto.ListResult
 import com.github.bestheroz.standard.common.dto.TokenDto
-import com.github.bestheroz.standard.common.exception.AuthenticationException401
+import com.github.bestheroz.standard.common.exception.Unauthorized401Exception
 import com.github.bestheroz.standard.common.exception.ExceptionCode
-import com.github.bestheroz.standard.common.exception.RequestException400
+import com.github.bestheroz.standard.common.exception.BadRequest400Exception
 import com.github.bestheroz.standard.common.log.logger
 import com.github.bestheroz.standard.common.security.Operator
 import com.github.bestheroz.standard.common.util.PasswordUtil.verifyPassword
@@ -46,14 +46,14 @@ class UserService(
         userRepository
             .findById(id)
             .map(UserDto.Response::of)
-            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
+            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
 
     fun createUser(
         request: UserCreateDto.Request,
         operator: Operator,
     ): UserDto.Response {
         userRepository.findByLoginIdAndRemovedFlagFalse(request.loginId).ifPresent {
-            throw RequestException400(ExceptionCode.ALREADY_JOINED_ACCOUNT)
+            throw BadRequest400Exception(ExceptionCode.ALREADY_JOINED_ACCOUNT)
         }
         return UserDto.Response.of(userRepository.save(request.toEntity(operator)))
     }
@@ -65,15 +65,15 @@ class UserService(
     ): UserDto.Response =
         userRepository
             .findById(id)
-            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
+            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
             .let { user ->
-                user.takeIf { it.removedFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_USER) }
+                user.takeIf { it.removedFlag }?.let { throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
 
                 userRepository
                     .findByLoginIdAndRemovedFlagFalseAndIdNot(
                         request.loginId,
                         id,
-                    ).ifPresent { throw RequestException400(ExceptionCode.ALREADY_JOINED_ACCOUNT) }
+                    ).ifPresent { throw BadRequest400Exception(ExceptionCode.ALREADY_JOINED_ACCOUNT) }
 
                 user.update(
                     request.loginId,
@@ -91,10 +91,10 @@ class UserService(
         operator: Operator,
     ) = userRepository
         .findById(id)
-        .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
+        .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
         .let { user ->
-            user.takeIf { it.removedFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_USER) }
-            user.takeIf { it.id == operator.id }?.let { throw RequestException400(ExceptionCode.CANNOT_REMOVE_YOURSELF) }
+            user.takeIf { it.removedFlag }?.let { throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
+            user.takeIf { it.id == operator.id }?.let { throw BadRequest400Exception(ExceptionCode.CANNOT_REMOVE_YOURSELF) }
             user.remove(operator)
         }
 
@@ -105,15 +105,15 @@ class UserService(
     ): UserDto.Response =
         userRepository
             .findById(id)
-            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
+            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
             .let { user ->
-                user.takeIf { it.removedFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_USER) }
+                user.takeIf { it.removedFlag }?.let { throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
                 user.password?.takeUnless { verifyPassword(request.oldPassword, it) }?.let {
                     log.warn("password not match")
-                    throw RequestException400(ExceptionCode.INVALID_PASSWORD)
+                    throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
                 }
                 user.password?.takeIf { it == request.newPassword }?.let {
-                    throw RequestException400(ExceptionCode.CHANGE_TO_SAME_PASSWORD)
+                    throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD)
                 }
                 user.changePassword(request.newPassword, operator)
                 return UserDto.Response.of(user)
@@ -122,12 +122,12 @@ class UserService(
     fun loginUser(request: UserLoginDto.Request): TokenDto =
         userRepository
             .findByLoginIdAndRemovedFlagFalse(request.loginId)
-            .orElseThrow<RequestException400> { RequestException400(ExceptionCode.UNJOINED_ACCOUNT) }
+            .orElseThrow<BadRequest400Exception> { BadRequest400Exception(ExceptionCode.UNJOINED_ACCOUNT) }
             .let { user ->
-                user.takeIf { it.removedFlag || !user.useFlag }?.let { throw RequestException400(ExceptionCode.UNKNOWN_USER) }
+                user.takeIf { it.removedFlag || !user.useFlag }?.let { throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
                 user.password?.takeUnless { verifyPassword(request.password, it) }?.let {
                     log.warn("password not match")
-                    throw RequestException400(ExceptionCode.INVALID_PASSWORD)
+                    throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
                 }
                 user.renewToken(jwtTokenProvider.createRefreshToken(Operator(user)))
                 return TokenDto(
@@ -139,11 +139,11 @@ class UserService(
     fun renewToken(refreshToken: String): TokenDto =
         userRepository
             .findById(jwtTokenProvider.getId(refreshToken))
-            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
+            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
             .let { user ->
                 user
                     .takeIf { user.removedFlag || user.token == null || !jwtTokenProvider.validateToken(refreshToken) }
-                    ?.let { throw AuthenticationException401() }
+                    ?.let { throw Unauthorized401Exception() }
                 user.token?.let {
                     if (jwtTokenProvider.issuedRefreshTokenIn3Seconds(it)) {
                         return TokenDto(
@@ -158,13 +158,13 @@ class UserService(
                         )
                     }
                 }
-                throw AuthenticationException401()
+                throw Unauthorized401Exception()
             }
 
     fun logout(id: Long) {
         userRepository
             .findById(id)
-            .orElseThrow { RequestException400(ExceptionCode.UNKNOWN_USER) }
+            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
             .logout()
     }
 

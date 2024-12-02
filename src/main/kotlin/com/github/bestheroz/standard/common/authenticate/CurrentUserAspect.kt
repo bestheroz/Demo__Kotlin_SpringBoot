@@ -1,6 +1,6 @@
 package com.github.bestheroz.standard.common.authenticate
 
-import com.github.bestheroz.standard.common.exception.AuthenticationException401
+import com.github.bestheroz.standard.common.exception.Unauthorized401Exception
 import com.github.bestheroz.standard.common.exception.ExceptionCode
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
@@ -15,7 +15,7 @@ class CurrentUserAspect {
     @Throws(Throwable::class)
     fun checkCurrentUser(joinPoint: ProceedingJoinPoint): Any? {
         SecurityContextHolder.getContext().authentication.takeIf { it.isAuthenticated && it.principal != null }
-            ?: throw AuthenticationException401(ExceptionCode.EXPIRED_TOKEN)
+            ?: throw Unauthorized401Exception(ExceptionCode.EXPIRED_TOKEN)
 
         return joinPoint.proceed()
     }

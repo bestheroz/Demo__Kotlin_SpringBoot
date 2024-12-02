@@ -7,8 +7,8 @@ plugins {
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("com.google.devtools.ksp") version "2.1.0-Beta2-1.0.26"
-    id("org.springframework.boot") version "3.3.5"
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
+    id("org.springframework.boot") version "3.4.0"
     id("io.spring.dependency-management") version "1.1.6"
     id("com.diffplug.spotless") version "7.0.0.BETA4"
     id("com.github.ben-manes.versions") version "0.51.0"
@@ -57,7 +57,7 @@ dependencies {
 
     // Database
     implementation("com.mysql:mysql-connector-j:9.1.0")
-    implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.2")
+    implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.10.0")
 
     // AWS
     implementation("io.awspring.cloud:spring-cloud-aws-starter")
@@ -66,8 +66,8 @@ dependencies {
 
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.4.0")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.0.0-beta.1")
-    implementation("io.sentry:sentry-logback:8.0.0-beta.1")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.0.0-rc.1")
+    implementation("io.sentry:sentry-logback:8.0.0-rc.1")
 
     // OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")

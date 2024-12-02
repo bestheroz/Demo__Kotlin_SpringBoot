@@ -5,6 +5,7 @@ import java.text.MessageFormat
 enum class ExceptionCode(
     private val message: String,
 ) {
+    CONCURRENCY_ERROR("현재 접속자가 많아 잠시 후 다시 시도해주세요."),
     UNKNOWN_SYSTEM_ERROR("알 수 없는 시스템 오류"),
     UNKNOWN_AUTHENTICATION("알 수 없는 인증 정보"),
     UNKNOWN_AUTHORITY("알 수 없는 권한"),

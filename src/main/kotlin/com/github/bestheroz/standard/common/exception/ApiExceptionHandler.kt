@@ -2,7 +2,7 @@ package com.github.bestheroz.standard.common.exception
 
 import com.github.bestheroz.standard.common.log.logger
 import com.github.bestheroz.standard.common.response.ApiResult
-import com.github.bestheroz.standard.common.response.Result
+import com.github.bestheroz.standard.common.response.ApiResult.Companion.of
 import com.github.bestheroz.standard.common.util.LogUtils
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.dao.DuplicateKeyException
@@ -32,7 +32,9 @@ class ApiExceptionHandler {
     @ExceptionHandler(Throwable::class)
     fun exception(e: Throwable?): ResponseEntity<ApiResult<*>> {
         log.error(LogUtils.getStackTrace(e))
-        return Result.error()
+        return ResponseEntity
+            .internalServerError()
+            .body(of(ExceptionCode.UNKNOWN_SYSTEM_ERROR))
     }
 
     @ExceptionHandler(NoResourceFoundException::class)
@@ -41,28 +43,28 @@ class ApiExceptionHandler {
         return ResponseEntity.notFound().build<ApiResult<*>>()
     }
 
-    @ExceptionHandler(RequestException400::class)
-    fun requestException400(e: RequestException400): ResponseEntity<ApiResult<*>> {
+    @ExceptionHandler(BadRequest400Exception::class)
+    fun requestException400(e: BadRequest400Exception): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
-        return ResponseEntity.badRequest().body(ApiResult.of(e.exceptionCode, e.data))
+        return ResponseEntity.badRequest().body(of(e.exceptionCode, e.data))
     }
 
-    @ExceptionHandler(AuthenticationException401::class)
-    fun authenticationException401(e: AuthenticationException401): ResponseEntity<ApiResult<*>> {
+    @ExceptionHandler(Unauthorized401Exception::class)
+    fun authenticationException401(e: Unauthorized401Exception): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
         val builder: ResponseEntity.BodyBuilder = ResponseEntity.status(HttpStatus.UNAUTHORIZED)
         if (e.exceptionCode == ExceptionCode.EXPIRED_TOKEN) {
             builder.header("token", "must-renew")
         }
-        return builder.body(ApiResult.of(e.exceptionCode, e.data))
+        return builder.body(of(e.exceptionCode, e.data))
     }
 
-    @ExceptionHandler(AuthorityException403::class)
-    fun authorityException403(e: AuthorityException403): ResponseEntity<ApiResult<*>> {
+    @ExceptionHandler(Forbidden403Exception::class)
+    fun authorityException403(e: Forbidden403Exception): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
-            .body(ApiResult.of(e.exceptionCode, e.data))
+            .body(of(e.exceptionCode, e.data))
     }
 
     @ExceptionHandler(AuthorizationDeniedException::class, AccessDeniedException::class)
@@ -70,27 +72,27 @@ class ApiExceptionHandler {
         log.warn(LogUtils.getStackTrace(e))
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
-            .body(ApiResult.of(ExceptionCode.UNKNOWN_AUTHORITY))
+            .body(of(ExceptionCode.UNKNOWN_AUTHORITY))
     }
 
-    @ExceptionHandler(SystemException500::class)
-    fun systemException500(e: SystemException500): ResponseEntity<ApiResult<*>> {
+    @ExceptionHandler(InternalServerError500Exception::class)
+    fun systemException500(e: InternalServerError500Exception): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
         return ResponseEntity
             .internalServerError()
-            .body(ApiResult.of(e.exceptionCode, e.data))
+            .body(of(e.exceptionCode, e.data))
     }
 
     @ExceptionHandler(IllegalArgumentException::class, IllegalStateException::class)
-    fun illegalArgumentException(e: IllegalArgumentException?): ResponseEntity<ApiResult<*>> {
+    fun illegalArgumentException(e: Throwable?): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
         return ResponseEntity
             .status(HttpStatus.UNPROCESSABLE_ENTITY)
-            .body(ApiResult.of(ExceptionCode.INVALID_PARAMETER))
+            .body(of(ExceptionCode.INVALID_PARAMETER))
     }
 
     @ExceptionHandler(UsernameNotFoundException::class)
-    fun usernameNotFoundException(e: UsernameNotFoundException?): ResponseEntity<ApiResult<*>> = Result.unauthenticated()
+    fun usernameNotFoundException(e: UsernameNotFoundException?): ResponseEntity<ApiResult<*>> = ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
 
     @ExceptionHandler(
         BindException::class,
