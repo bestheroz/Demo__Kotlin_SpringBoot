@@ -14,24 +14,19 @@ import java.time.Instant
 @Entity
 @DiscriminatorValue("admin")
 data class Admin(
-    @Column(nullable = false)
-    var loginId: String,
+    @Column(nullable = false) var loginId: String,
     var password: String? = null,
     var token: String? = null,
-    @Column(nullable = false)
-    var name: String,
-    @Column(nullable = false)
-    var useFlag: Boolean,
-    @Column(nullable = false)
-    var managerFlag: Boolean,
+    @Column(nullable = false) var name: String,
+    @Column(nullable = false) var useFlag: Boolean,
+    @Column(nullable = false) var managerFlag: Boolean,
     @Convert(converter = AuthorityEnum.AuthorityEnumListConverter::class)
     @Column(name = "authorities", columnDefinition = "json", nullable = false)
     var _authorities: List<AuthorityEnum>,
     var changePasswordAt: Instant? = null,
     var latestActiveAt: Instant? = null,
     var joinedAt: Instant? = null,
-    @Column(nullable = false)
-    var removedFlag: Boolean = false,
+    @Column(nullable = false) var removedFlag: Boolean = false,
     var removedAt: Instant? = null,
 ) : IdCreatedUpdated() {
     fun getType(): UserTypeEnum = UserTypeEnum.ADMIN
@@ -73,9 +68,7 @@ data class Admin(
                 useFlag = false,
                 managerFlag = operator.managerFlag,
                 _authorities = emptyList(),
-            ).apply {
-                this.id = operator.id
-            }
+            ).apply { this.id = operator.id }
     }
 
     fun update(

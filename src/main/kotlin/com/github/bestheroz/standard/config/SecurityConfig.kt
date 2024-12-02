@@ -29,27 +29,21 @@ class SecurityConfig(
         http
             .csrf({ obj: CsrfConfigurer<HttpSecurity?> -> obj.disable() })
             .cors({ cors: CorsConfigurer<HttpSecurity?> ->
-                cors.configurationSource(
-                    corsConfigurationSource(),
-                )
+                cors.configurationSource(corsConfigurationSource())
             })
-            .sessionManagement(
-                { session: SessionManagementConfigurer<HttpSecurity?> ->
-                    session.sessionCreationPolicy(
-                        SessionCreationPolicy.STATELESS,
-                    )
-                },
-            ).authorizeHttpRequests(
-                { auth ->
-                    auth
-                        .requestMatchers(HttpMethod.GET, *GET_PUBLIC)
-                        .permitAll()
-                        .requestMatchers(HttpMethod.POST, *POST_PUBLIC)
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated()
-                },
-            ).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .sessionManagement({ session: SessionManagementConfigurer<HttpSecurity?> ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            })
+            .authorizeHttpRequests({ auth ->
+                auth
+                    .requestMatchers(HttpMethod.GET, *GET_PUBLIC)
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, *POST_PUBLIC)
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated()
+            })
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }
@@ -70,8 +64,7 @@ class SecurityConfig(
         return source
     }
 
-    @Bean
-    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+    @Bean fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
     companion object {
         val GET_PUBLIC: Array<String> =
@@ -89,10 +82,6 @@ class SecurityConfig(
                 "/api/v1/users/check-login-id",
                 "/api/v1/users/renew-token",
             )
-        val POST_PUBLIC: Array<String> =
-            arrayOf(
-                "/api/v1/admins/login",
-                "/api/v1/users/login",
-            )
+        val POST_PUBLIC: Array<String> = arrayOf("/api/v1/admins/login", "/api/v1/users/login")
     }
 }

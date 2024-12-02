@@ -16,7 +16,9 @@ data class Operator(
     val managerFlag: Boolean,
     val authorities: List<AuthorityEnum>,
 ) : UserDetails {
-    constructor(admin: Admin) : this(
+    constructor(
+        admin: Admin,
+    ) : this(
         id = admin.id!!,
         loginId = admin.loginId,
         name = admin.name,
@@ -25,7 +27,9 @@ data class Operator(
         authorities = admin.authorities,
     )
 
-    constructor(user: User) : this(
+    constructor(
+        user: User,
+    ) : this(
         id = user.id!!,
         loginId = user.loginId,
         name = user.name,

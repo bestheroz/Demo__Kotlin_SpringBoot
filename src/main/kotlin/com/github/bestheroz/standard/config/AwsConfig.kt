@@ -7,6 +7,5 @@ import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain
 
 @Configuration
 class AwsConfig {
-    @Bean
-    fun awsRegionProvider(): AwsRegionProvider = DefaultAwsRegionProviderChain()
+    @Bean fun awsRegionProvider(): AwsRegionProvider = DefaultAwsRegionProviderChain()
 }

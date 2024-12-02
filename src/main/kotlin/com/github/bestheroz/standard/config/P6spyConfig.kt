@@ -44,11 +44,7 @@ class P6spyConfig {
                     if (StringUtils.isEmpty(sql)) {
                         ""
                     } else {
-                        "\n" +
-                            this.formatSql(
-                                category,
-                                sql,
-                            )
+                        "\n" + this.formatSql(category, sql)
                     },
                 )
             }
@@ -65,9 +61,7 @@ class P6spyConfig {
                     return if (StringUtils.startsWithAny("create", "alter", "comment")) {
                         FormatStyle.DDL.formatter.format(sql)
                     } else {
-                        FormatStyle.HIGHLIGHT
-                            .formatter
-                            .format(FormatStyle.BASIC.formatter.format(sql))
+                        FormatStyle.HIGHLIGHT.formatter.format(FormatStyle.BASIC.formatter.format(sql))
                     }
                 }
             }

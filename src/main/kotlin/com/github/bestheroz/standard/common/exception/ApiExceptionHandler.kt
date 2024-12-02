@@ -32,9 +32,7 @@ class ApiExceptionHandler {
     @ExceptionHandler(Throwable::class)
     fun exception(e: Throwable?): ResponseEntity<ApiResult<*>> {
         log.error(LogUtils.getStackTrace(e))
-        return ResponseEntity
-            .internalServerError()
-            .body(of(ExceptionCode.UNKNOWN_SYSTEM_ERROR))
+        return ResponseEntity.internalServerError().body(of(ExceptionCode.UNKNOWN_SYSTEM_ERROR))
     }
 
     @ExceptionHandler(NoResourceFoundException::class)
@@ -62,25 +60,19 @@ class ApiExceptionHandler {
     @ExceptionHandler(Forbidden403Exception::class)
     fun authorityException403(e: Forbidden403Exception): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
-        return ResponseEntity
-            .status(HttpStatus.FORBIDDEN)
-            .body(of(e.exceptionCode, e.data))
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(of(e.exceptionCode, e.data))
     }
 
     @ExceptionHandler(AuthorizationDeniedException::class, AccessDeniedException::class)
     fun authorizationDeniedException(e: AccessDeniedException?): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
-        return ResponseEntity
-            .status(HttpStatus.FORBIDDEN)
-            .body(of(ExceptionCode.UNKNOWN_AUTHORITY))
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(of(ExceptionCode.UNKNOWN_AUTHORITY))
     }
 
     @ExceptionHandler(InternalServerError500Exception::class)
     fun systemException500(e: InternalServerError500Exception): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
-        return ResponseEntity
-            .internalServerError()
-            .body(of(e.exceptionCode, e.data))
+        return ResponseEntity.internalServerError().body(of(e.exceptionCode, e.data))
     }
 
     @ExceptionHandler(IllegalArgumentException::class, IllegalStateException::class)
@@ -94,9 +86,7 @@ class ApiExceptionHandler {
     @ExceptionHandler(UsernameNotFoundException::class)
     fun usernameNotFoundException(e: UsernameNotFoundException?): ResponseEntity<ApiResult<*>> = ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
 
-    @ExceptionHandler(
-        BindException::class,
-    )
+    @ExceptionHandler(BindException::class)
     fun bindException(e: Throwable?): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
         return ResponseEntity.badRequest().build()

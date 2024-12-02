@@ -20,11 +20,7 @@ data class Notice(
             content: String,
             useFlag: Boolean,
             operator: Operator,
-        ) = Notice(
-            title = title,
-            content = content,
-            useFlag = useFlag,
-        ).apply {
+        ) = Notice(title = title, content = content, useFlag = useFlag).apply {
             val now = Instant.now()
             this.setCreatedBy(operator, now)
             this.setUpdatedBy(operator, now)

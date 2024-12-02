@@ -78,9 +78,7 @@ object DateUtils {
         pattern: String,
     ): OffsetDateTime? {
         Assert.hasText(pattern, "pattern parameter must not be empty or null")
-        return text?.let {
-            OffsetDateTime.parse(it, DateTimeFormatter.ofPattern(pattern))
-        }
+        return text?.let { OffsetDateTime.parse(it, DateTimeFormatter.ofPattern(pattern)) }
     }
 
     fun parseOffsetDateTimeAtUTC(text: String?): OffsetDateTime? = text?.let { OffsetDateTime.parse(it) }

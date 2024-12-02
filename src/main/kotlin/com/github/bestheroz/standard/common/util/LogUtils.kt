@@ -8,6 +8,7 @@ object LogUtils {
     fun getStackTrace(e: Throwable?): String =
         Arrays
             .stream(ExceptionUtils.getStackFrames(e))
-            .filter { item: String -> item.startsWith("\tat com.github.bestheroz") || !item.startsWith("\tat") }
-            .collect(Collectors.joining("\n"))
+            .filter { item: String ->
+                item.startsWith("\tat com.github.bestheroz") || !item.startsWith("\tat")
+            }.collect(Collectors.joining("\n"))
 }

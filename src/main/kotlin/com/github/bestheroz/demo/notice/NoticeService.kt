@@ -3,8 +3,8 @@ package com.github.bestheroz.demo.notice
 import com.github.bestheroz.demo.entity.Notice
 import com.github.bestheroz.demo.repository.NoticeRepository
 import com.github.bestheroz.standard.common.dto.ListResult
-import com.github.bestheroz.standard.common.exception.ExceptionCode
 import com.github.bestheroz.standard.common.exception.BadRequest400Exception
+import com.github.bestheroz.standard.common.exception.ExceptionCode
 import com.github.bestheroz.standard.common.security.Operator
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -20,22 +20,15 @@ class NoticeService(
     fun getNoticeList(request: NoticeDto.Request): ListResult<NoticeDto.Response> =
         noticeRepository
             .findAllByRemovedFlagIsFalse(
-                PageRequest.of(
-                    request.page - 1,
-                    request.pageSize,
-                    Sort.by("id").descending(),
-                ),
+                PageRequest.of(request.page - 1, request.pageSize, Sort.by("id").descending()),
             ).map(NoticeDto.Response::of)
-            .let {
-                ListResult.of(it)
-            }
+            .let { ListResult.of(it) }
 
     @Transactional(readOnly = true)
     fun getNotice(id: Long): NoticeDto.Response =
-        noticeRepository
-            .findById(id)
-            .map(NoticeDto.Response::of)
-            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE) }
+        noticeRepository.findById(id).map(NoticeDto.Response::of).orElseThrow {
+            BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE)
+        }
 
     fun createNotice(
         request: NoticeCreateDto.Request,
@@ -50,17 +43,10 @@ class NoticeService(
         noticeRepository
             .findById(id)
             .map { notice: Notice ->
-                notice.update(
-                    request.title,
-                    request.content,
-                    request.useFlag,
-                    operator,
-                )
+                notice.update(request.title, request.content, request.useFlag, operator)
                 notice
             }.orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE) }
-            .let {
-                NoticeDto.Response.of(it)
-            }
+            .let { NoticeDto.Response.of(it) }
 
     fun deleteNotice(
         id: Long,

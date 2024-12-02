@@ -12,7 +12,12 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.method.HandlerMethod
 
 @Configuration
-@SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")
+@SecurityScheme(
+    name = "bearerAuth",
+    type = SecuritySchemeType.HTTP,
+    scheme = "bearer",
+    bearerFormat = "JWT",
+)
 class OpenApiConfig {
     @Bean
     fun customOpenAPI(): OpenAPI =

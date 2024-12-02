@@ -48,9 +48,7 @@ class NoticeController(
 
     @DeleteMapping("{id}")
     @Operation(description = "(Soft delete)", responses = [ApiResponse(responseCode = "204")])
-    @ResponseStatus(
-        HttpStatus.NO_CONTENT,
-    )
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('NOTICE_EDIT')")
     fun deleteNotice(

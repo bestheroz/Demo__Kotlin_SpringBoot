@@ -22,10 +22,7 @@ open class GenericEnumListJsonConverter<T : Enum<T>>(
     override fun convertToEntityAttribute(dbData: String): List<T>? {
         try {
             val type: JavaType =
-                objectMapper.typeFactory.constructCollectionType(
-                    MutableList::class.java,
-                    enumClass,
-                )
+                objectMapper.typeFactory.constructCollectionType(MutableList::class.java, enumClass)
             return objectMapper.readValue(dbData, type)
         } catch (e: IOException) {
             throw RuntimeException("Error converting JSON to list", e)

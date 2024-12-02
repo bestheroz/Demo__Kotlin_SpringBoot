@@ -105,7 +105,8 @@ tasks.bootJar {
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     kotlin {
-        ktlint("1.3.1").editorConfigOverride(
+        ktfmt("0.53").googleStyle()
+        ktlint("1.4.1").editorConfigOverride(
             mapOf(
                 "ktlint_code_style" to "ktlint_official",
                 "ktlint_standard_no-wildcard-imports" to "disabled",
@@ -115,7 +116,7 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     }
 
     kotlinGradle {
-        ktlint("1.3.1")
+        ktlint("1.4.1")
     }
 }
 

@@ -50,10 +50,11 @@ class AdminController(
     @GetMapping("renew-token")
     @Operation(
         summary = "관리자 토큰 갱신",
-        description = (
-            """*어세스 토큰* 만료 시 *리플래시 토큰* 으로 *어세스 토큰* 을 갱신합니다.
+        description =
+            (
+                """*어세스 토큰* 만료 시 *리플래시 토큰* 으로 *어세스 토큰* 을 갱신합니다.
     "(동시에 여러 사용자가 접속하고 있다면 *리플래시 토큰* 값이 달라서 갱신이 안될 수 있습니다.)"""
-        ),
+            ),
     )
     fun renewToken(
         @Schema(description = "리플래시 토큰") @RequestHeader(value = "AuthorizationR") refreshToken: String,
@@ -87,10 +88,12 @@ class AdminController(
     ): AdminDto.Response = adminService.changePassword(id, request, operator)
 
     @DeleteMapping("logout")
-    @Operation(summary = "관리자 로그아웃", description = "리플래시 토큰을 삭제합니다.", responses = [ApiResponse(responseCode = "204")])
-    @ResponseStatus(
-        HttpStatus.NO_CONTENT,
+    @Operation(
+        summary = "관리자 로그아웃",
+        description = "리플래시 토큰을 삭제합니다.",
+        responses = [ApiResponse(responseCode = "204")],
     )
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('ADMIN_EDIT')")
     fun logout(
@@ -99,9 +102,7 @@ class AdminController(
 
     @DeleteMapping("{id}")
     @Operation(description = "(Soft delete)", responses = [ApiResponse(responseCode = "204")])
-    @ResponseStatus(
-        HttpStatus.NO_CONTENT,
-    )
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('ADMIN_EDIT')")
     fun deleteAdmin(

@@ -24,7 +24,8 @@ class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
 ) : OncePerRequestFilter() {
     companion object {
-        private const val REQUEST_COMPLETE_EXECUTE_TIME = "{} ....... Request Complete Execute Time ....... : {}"
+        private const val REQUEST_COMPLETE_EXECUTE_TIME =
+            "{} ....... Request Complete Execute Time ....... : {}"
         private const val REQUEST_PARAMETERS = "<{}>{}?{}"
         private val log = logger()
     }
@@ -100,10 +101,14 @@ class JwtAuthenticationFilter(
     private fun isPublicPath(request: HttpServletRequest): Boolean =
         when (request.method) {
             HttpMethod.GET.toString() -> {
-                publicGetPaths.stream().anyMatch { matcher: AntPathRequestMatcher -> matcher.matches(request) }
+                publicGetPaths.stream().anyMatch { matcher: AntPathRequestMatcher ->
+                    matcher.matches(request)
+                }
             }
             HttpMethod.POST.toString() -> {
-                publicPostPaths.stream().anyMatch { matcher: AntPathRequestMatcher -> matcher.matches(request) }
+                publicPostPaths.stream().anyMatch { matcher: AntPathRequestMatcher ->
+                    matcher.matches(request)
+                }
             }
             else -> {
                 false

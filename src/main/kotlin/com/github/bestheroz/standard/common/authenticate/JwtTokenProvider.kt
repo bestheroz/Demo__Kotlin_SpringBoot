@@ -90,14 +90,17 @@ class JwtTokenProvider(
 
     fun issuedRefreshTokenIn3Seconds(refreshToken: String): Boolean =
         try {
-            Instant.now().plusSeconds(3).isBefore(
-                JWT
-                    .require(algorithm)
-                    .build()
-                    .verify(refreshToken)
-                    .expiresAt
-                    .toInstant(),
-            )
+            Instant
+                .now()
+                .plusSeconds(3)
+                .isBefore(
+                    JWT
+                        .require(algorithm)
+                        .build()
+                        .verify(refreshToken)
+                        .expiresAt
+                        .toInstant(),
+                )
         } catch (e: JWTVerificationException) {
             log.warn("Invalid refresh token: {}", e.message)
             log.warn(LogUtils.getStackTrace(e))

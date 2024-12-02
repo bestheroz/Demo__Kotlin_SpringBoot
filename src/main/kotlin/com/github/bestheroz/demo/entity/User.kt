@@ -16,14 +16,11 @@ import java.time.Instant
 @Entity
 @DiscriminatorValue("user")
 data class User(
-    @Column(nullable = false)
-    var loginId: String,
+    @Column(nullable = false) var loginId: String,
     var password: String? = null,
     var token: String? = null,
-    @Column(nullable = false)
-    var name: String,
-    @Column(nullable = false)
-    var useFlag: Boolean,
+    @Column(nullable = false) var name: String,
+    @Column(nullable = false) var useFlag: Boolean,
     @Convert(converter = AuthorityEnumListConverter::class)
     @Column(columnDefinition = "json", nullable = false)
     var authorities: List<AuthorityEnum>,
@@ -33,8 +30,7 @@ data class User(
     @Convert(converter = JsonAttributeConverter::class)
     @Column(columnDefinition = "json", nullable = false)
     var additionalInfo: Map<String, Any>,
-    @Column(nullable = false)
-    var removedFlag: Boolean = false,
+    @Column(nullable = false) var removedFlag: Boolean = false,
     var removedAt: Instant? = null,
 ) : IdCreatedUpdated() {
     fun getType(): UserTypeEnum = UserTypeEnum.USER
@@ -69,9 +65,7 @@ data class User(
                 useFlag = false,
                 authorities = listOf(),
                 additionalInfo = mapOf(),
-            ).apply {
-                this.id = operator.id
-            }
+            ).apply { this.id = operator.id }
     }
 
     fun update(

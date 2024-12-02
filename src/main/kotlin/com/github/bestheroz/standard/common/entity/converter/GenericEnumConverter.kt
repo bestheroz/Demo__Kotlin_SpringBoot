@@ -9,8 +9,7 @@ import java.util.stream.Stream
 @Converter
 open class GenericEnumConverter<T : Enum<T>> : AttributeConverter<T?, String?> {
     private val enumClass =
-        (javaClass.genericSuperclass as ParameterizedType)
-            .actualTypeArguments[0] as Class<T>
+        (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<T>
 
     override fun convertToDatabaseColumn(attribute: T?): String? =
         attribute?.let {
@@ -23,10 +22,6 @@ open class GenericEnumConverter<T : Enum<T>> : AttributeConverter<T?, String?> {
                 .of(*enumClass.enumConstants)
                 .filter { e: T -> e.name.lowercase(Locale.getDefault()) == it }
                 .findFirst()
-                .orElseThrow {
-                    IllegalArgumentException(
-                        "Unknown enum value: $it",
-                    )
-                }
+                .orElseThrow { IllegalArgumentException("Unknown enum value: $it") }
         }
 }

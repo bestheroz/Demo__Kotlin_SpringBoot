@@ -18,8 +18,7 @@ class UserDto {
     data class Response(
         @Schema(description = "로그인 아이디", requiredMode = Schema.RequiredMode.REQUIRED)
         val loginId: String,
-        @Schema(description = "유저 이름", requiredMode = Schema.RequiredMode.REQUIRED)
-        val name: String,
+        @Schema(description = "유저 이름", requiredMode = Schema.RequiredMode.REQUIRED) val name: String,
         @Schema(description = "사용 여부", requiredMode = Schema.RequiredMode.REQUIRED)
         val useFlag: Boolean,
         @Schema(description = "권한 목록", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -32,15 +31,9 @@ class UserDto {
         val changePasswordAt: Instant? = null,
         @Schema(description = "ID(KEY)", requiredMode = Schema.RequiredMode.REQUIRED)
         override val id: Long,
-        @Schema(
-            description = "생성일시",
-            requiredMode = Schema.RequiredMode.REQUIRED,
-        )
+        @Schema(description = "생성일시", requiredMode = Schema.RequiredMode.REQUIRED)
         override val createdAt: Instant,
-        @Schema(
-            description = "생성자",
-            requiredMode = Schema.RequiredMode.REQUIRED,
-        )
+        @Schema(description = "생성자", requiredMode = Schema.RequiredMode.REQUIRED)
         override val createdBy: UserSimpleDto,
         @Schema(description = "수정일시", requiredMode = Schema.RequiredMode.REQUIRED)
         override val updatedAt: Instant,

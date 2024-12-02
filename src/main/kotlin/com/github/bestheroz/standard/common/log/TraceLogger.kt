@@ -29,9 +29,9 @@ class TraceLogger(
     @Throws(Throwable::class)
     fun writeLog(pjp: ProceedingJoinPoint): Any? {
         val signature =
-            pjp.staticPart.signature.toString().removePrefix(
-                pjp.staticPart.signature.declaringType.`package`.name + ".",
-            )
+            pjp.staticPart.signature
+                .toString()
+                .removePrefix(pjp.staticPart.signature.declaringType.`package`.name + ".")
         val stopWatch = StopWatch()
         stopWatch.start()
 

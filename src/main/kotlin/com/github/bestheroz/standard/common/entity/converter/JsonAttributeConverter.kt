@@ -23,13 +23,9 @@ class JsonAttributeConverter(
                 return null
             }
             if (dbData.startsWith("[")) {
-                return objectMapper.readValue<List<Any>>(
-                    dbData,
-                )
+                return objectMapper.readValue<List<Any>>(dbData)
             } else if (dbData.startsWith("{")) {
-                return objectMapper.readValue<Map<String, Any>>(
-                    dbData,
-                )
+                return objectMapper.readValue<Map<String, Any>>(dbData)
             }
             return dbData
         } catch (e: Exception) {
