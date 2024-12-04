@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val kotlinVersion = "2.1.0-Beta2"
+    val kotlinVersion = "2.1.0"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
@@ -38,8 +38,8 @@ dependencies {
     implementation(kotlin("noarg"))
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    implementation("com.google.dagger:dagger-compiler:2.52")
-    ksp("com.google.dagger:dagger-compiler:2.52")
+    implementation("com.google.dagger:dagger-compiler:2.53")
+    ksp("com.google.dagger:dagger-compiler:2.53")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
