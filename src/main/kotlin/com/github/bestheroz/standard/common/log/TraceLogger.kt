@@ -74,8 +74,8 @@ class TraceLogger(
 
     private fun String.containsAny(vararg substrings: String): Boolean = StringUtils.containsAny(this, *substrings)
 
-    private fun String.abbreviate(
+    private fun String?.abbreviate(
         maxWidth: Int,
         abbrevMarker: String,
-    ): String = StringUtils.abbreviate(StringUtils.defaultString(this, "null"), abbrevMarker, maxWidth)
+    ): String = StringUtils.abbreviate(this ?: "null", abbrevMarker, maxWidth)
 }

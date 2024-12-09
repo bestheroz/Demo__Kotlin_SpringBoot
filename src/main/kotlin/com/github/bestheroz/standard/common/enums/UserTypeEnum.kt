@@ -11,5 +11,5 @@ enum class UserTypeEnum(
     ;
 
     @Converter(autoApply = true)
-    class EnumConverter : GenericEnumConverter<UserTypeEnum>()
+    class EnumConverter : GenericEnumConverter<UserTypeEnum>(UserTypeEnum::class.java)
 }

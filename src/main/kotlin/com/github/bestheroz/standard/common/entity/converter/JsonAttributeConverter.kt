@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
-import org.apache.commons.lang3.StringUtils
 
 @Converter
 class JsonAttributeConverter(
@@ -17,17 +16,18 @@ class JsonAttributeConverter(
             throw RuntimeException(e)
         }
 
-    override fun convertToEntityAttribute(dbData: String): Any? {
+    override fun convertToEntityAttribute(dbData: String?): Any? {
         try {
-            if (StringUtils.isEmpty(dbData)) {
+            if (dbData.isNullOrEmpty()) {
                 return null
             }
-            if (dbData.startsWith("[")) {
-                return objectMapper.readValue<List<Any>>(dbData)
+            return if (dbData.startsWith("[")) {
+                objectMapper.readValue<List<Any>>(dbData)
             } else if (dbData.startsWith("{")) {
-                return objectMapper.readValue<Map<String, Any>>(dbData)
+                objectMapper.readValue<Map<String, Any>>(dbData)
+            } else {
+                dbData
             }
-            return dbData
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
