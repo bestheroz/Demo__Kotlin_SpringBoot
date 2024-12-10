@@ -41,6 +41,9 @@ abstract class IdCreatedUpdated : IdCreated() {
         operator: Operator,
         instant: Instant,
     ) {
+        updatedAt = instant
+        updatedObjectId = operator.id
+        updatedObjectType = operator.type
         when (operator.type) {
             UserTypeEnum.ADMIN -> {
                 updatedByAdmin = Admin.of(operator)
@@ -49,9 +52,6 @@ abstract class IdCreatedUpdated : IdCreated() {
                 updatedByUser = User.of(operator)
             }
         }
-        updatedAt = instant
-        updatedObjectId = operator.id
-        updatedObjectType = operator.type
     }
 
     val updatedBy: UserSimpleDto
