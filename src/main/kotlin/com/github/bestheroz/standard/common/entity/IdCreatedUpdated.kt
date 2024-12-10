@@ -43,11 +43,9 @@ abstract class IdCreatedUpdated : IdCreated() {
     ) {
         when (operator.type) {
             UserTypeEnum.ADMIN -> {
-                updatedObjectType = UserTypeEnum.ADMIN
                 updatedByAdmin = Admin.of(operator)
             }
             UserTypeEnum.USER -> {
-                updatedObjectType = UserTypeEnum.USER
                 updatedByUser = User.of(operator)
             }
         }
@@ -61,5 +59,5 @@ abstract class IdCreatedUpdated : IdCreated() {
             when (updatedObjectType) {
                 UserTypeEnum.ADMIN -> UserSimpleDto.of(updatedByAdmin!!)
                 UserTypeEnum.USER -> UserSimpleDto.of(updatedByUser!!)
-            }
+            } ?: throw IllegalStateException("Updated user not found")
 }

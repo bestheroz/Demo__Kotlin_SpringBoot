@@ -45,19 +45,17 @@ abstract class IdCreated {
         operator: Operator,
         instant: Instant,
     ) {
-        when (operator.type) {
-            UserTypeEnum.ADMIN -> {
-                createdObjectType = UserTypeEnum.ADMIN
-                createdByAdmin = Admin.of(operator)
-            }
-            UserTypeEnum.USER -> {
-                createdObjectType = UserTypeEnum.USER
-                createdByUser = User.of(operator)
-            }
-        }
         createdAt = instant
         createdObjectId = operator.id
         createdObjectType = operator.type
+        when (operator.type) {
+            UserTypeEnum.ADMIN -> {
+                createdByAdmin = Admin.of(operator)
+            }
+            UserTypeEnum.USER -> {
+                createdByUser = User.of(operator)
+            }
+        }
     }
 
     val createdBy: UserSimpleDto
