@@ -6,6 +6,9 @@ import com.github.bestheroz.standard.common.dto.UserSimpleDto
 import com.github.bestheroz.standard.common.enums.UserTypeEnum
 import com.github.bestheroz.standard.common.security.Operator
 import jakarta.persistence.*
+import org.hibernate.annotations.JoinColumnOrFormula
+import org.hibernate.annotations.JoinColumnsOrFormulas
+import org.hibernate.annotations.JoinFormula
 import java.time.Instant
 
 @MappedSuperclass
@@ -20,20 +23,26 @@ abstract class IdCreatedUpdated : IdCreated() {
     var updatedObjectId: Long? = null
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "updated_object_id",
-        referencedColumnName = "id",
-        insertable = false,
-        updatable = false,
+    @JoinColumnsOrFormulas(
+        JoinColumnOrFormula(
+            formula =
+                JoinFormula(
+                    value = "CASE WHEN updated_object_type = 'admin' THEN updated_object_id ELSE null END",
+                    referencedColumnName = "id",
+                ),
+        ),
     )
     var updatedByAdmin: Admin? = null
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "updated_object_id",
-        referencedColumnName = "id",
-        insertable = false,
-        updatable = false,
+    @JoinColumnsOrFormulas(
+        JoinColumnOrFormula(
+            formula =
+                JoinFormula(
+                    value = "CASE WHEN updated_object_type = 'user' THEN updated_object_id ELSE null END",
+                    referencedColumnName = "id",
+                ),
+        ),
     )
     var updatedByUser: User? = null
 
