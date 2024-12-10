@@ -28,8 +28,8 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.3.5")
-        mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.2.0-M1")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.0")
+        mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.2.1")
     }
 }
 
@@ -38,8 +38,8 @@ dependencies {
     implementation(kotlin("noarg"))
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    implementation("com.google.dagger:dagger-compiler:2.53")
-    ksp("com.google.dagger:dagger-compiler:2.53")
+    implementation("com.google.dagger:dagger-compiler:2.53.1")
+    ksp("com.google.dagger:dagger-compiler:2.53.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
