@@ -8,9 +8,9 @@ import java.time.Instant
 
 @Entity
 data class Notice(
-    @Column(nullable = false) var title: String,
-    @Column(nullable = false) var content: String,
-    @Column(nullable = false) var useFlag: Boolean,
+    @Column(nullable = false) var title: String = "",
+    @Column(nullable = false) var content: String = "",
+    @Column(nullable = false) var useFlag: Boolean = false,
     @Column(nullable = false) var removedFlag: Boolean = false,
     private var removedAt: Instant? = null,
 ) : IdCreatedUpdated() {

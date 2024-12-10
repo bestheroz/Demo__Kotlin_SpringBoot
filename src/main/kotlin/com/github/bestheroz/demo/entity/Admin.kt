@@ -14,15 +14,15 @@ import java.time.Instant
 @Entity
 @DiscriminatorValue("admin")
 data class Admin(
-    @Column(nullable = false) var loginId: String,
+    @Column(nullable = false) var loginId: String = "",
     var password: String? = null,
     var token: String? = null,
-    @Column(nullable = false) var name: String,
-    @Column(nullable = false) var useFlag: Boolean,
-    @Column(nullable = false) var managerFlag: Boolean,
+    @Column(nullable = false) var name: String = "",
+    @Column(nullable = false) var useFlag: Boolean = false,
+    @Column(nullable = false) var managerFlag: Boolean = false,
     @Convert(converter = AuthorityEnum.AuthorityEnumListConverter::class)
     @Column(name = "authorities", columnDefinition = "json", nullable = false)
-    var _authorities: List<AuthorityEnum>,
+    var _authorities: List<AuthorityEnum> = mutableListOf(),
     var changePasswordAt: Instant? = null,
     var latestActiveAt: Instant? = null,
     var joinedAt: Instant? = null,

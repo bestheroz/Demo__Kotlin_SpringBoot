@@ -16,20 +16,20 @@ import java.time.Instant
 @Entity
 @DiscriminatorValue("user")
 data class User(
-    @Column(nullable = false) var loginId: String,
+    @Column(nullable = false) var loginId: String = "",
     var password: String? = null,
     var token: String? = null,
-    @Column(nullable = false) var name: String,
-    @Column(nullable = false) var useFlag: Boolean,
+    @Column(nullable = false) var name: String = "",
+    @Column(nullable = false) var useFlag: Boolean = false,
     @Convert(converter = AuthorityEnumListConverter::class)
     @Column(columnDefinition = "json", nullable = false)
-    var authorities: List<AuthorityEnum>,
+    var authorities: List<AuthorityEnum> = mutableListOf(),
     var changePasswordAt: Instant? = null,
     var latestActiveAt: Instant? = null,
     var joinedAt: Instant? = null,
     @Convert(converter = JsonAttributeConverter::class)
     @Column(columnDefinition = "json", nullable = false)
-    var additionalInfo: Map<String, Any>,
+    var additionalInfo: Map<String, Any> = mutableMapOf(),
     @Column(nullable = false) var removedFlag: Boolean = false,
     var removedAt: Instant? = null,
 ) : IdCreatedUpdated() {
