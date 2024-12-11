@@ -9,6 +9,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.FetchType
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.MappedSuperclass
+import jakarta.persistence.Transient
 import org.hibernate.annotations.JoinColumnOrFormula
 import org.hibernate.annotations.JoinColumnsOrFormulas
 import org.hibernate.annotations.JoinFormula
@@ -49,6 +50,8 @@ abstract class IdCreatedUpdated : IdCreated() {
     )
     var updatedByUser: User? = null
 
+    @Transient var updater: Operator? = null
+
     fun setUpdatedBy(
         operator: Operator,
         instant: Instant,
@@ -56,20 +59,19 @@ abstract class IdCreatedUpdated : IdCreated() {
         updatedAt = instant
         updatedObjectId = operator.id
         updatedObjectType = operator.type
-        when (operator.type) {
-            UserTypeEnum.ADMIN -> {
-                updatedByAdmin = Admin.of(operator)
-            }
-            UserTypeEnum.USER -> {
-                updatedByUser = User.of(operator)
-            }
-        }
+        this.updater = operator
     }
 
     val updatedBy: UserSimpleDto
         get() =
             when (updatedObjectType) {
-                UserTypeEnum.ADMIN -> UserSimpleDto.of(updatedByAdmin!!)
-                UserTypeEnum.USER -> UserSimpleDto.of(updatedByUser!!)
+                UserTypeEnum.ADMIN ->
+                    updater?.let(UserSimpleDto::of)
+                        ?: updatedByAdmin?.let(UserSimpleDto::of)
+                        ?: throw IllegalStateException("Neither updatedByAdmin nor updater exists")
+                UserTypeEnum.USER ->
+                    updater?.let(UserSimpleDto::of)
+                        ?: updatedByUser?.let(UserSimpleDto::of)
+                        ?: throw IllegalStateException("Neither updatedByUser nor updater exists")
             }
 }

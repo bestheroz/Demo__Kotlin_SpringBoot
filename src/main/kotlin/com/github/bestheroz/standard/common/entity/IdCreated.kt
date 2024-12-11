@@ -6,6 +6,7 @@ import com.github.bestheroz.standard.common.dto.UserSimpleDto
 import com.github.bestheroz.standard.common.enums.UserTypeEnum
 import com.github.bestheroz.standard.common.security.Operator
 import jakarta.persistence.*
+import jakarta.persistence.Transient
 import org.hibernate.annotations.JoinColumnOrFormula
 import org.hibernate.annotations.JoinColumnsOrFormulas
 import org.hibernate.annotations.JoinFormula
@@ -50,6 +51,8 @@ abstract class IdCreated {
     )
     var createdByUser: User? = null
 
+    @Transient var creator: Operator? = null
+
     fun setCreatedBy(
         operator: Operator,
         instant: Instant,
@@ -57,20 +60,19 @@ abstract class IdCreated {
         createdAt = instant
         createdObjectId = operator.id
         createdObjectType = operator.type
-        when (operator.type) {
-            UserTypeEnum.ADMIN -> {
-                createdByAdmin = Admin.of(operator)
-            }
-            UserTypeEnum.USER -> {
-                createdByUser = User.of(operator)
-            }
-        }
+        this.creator = operator
     }
 
     val createdBy: UserSimpleDto
         get() =
             when (createdObjectType) {
-                UserTypeEnum.ADMIN -> UserSimpleDto.of(createdByAdmin!!)
-                UserTypeEnum.USER -> UserSimpleDto.of(createdByUser!!)
+                UserTypeEnum.ADMIN ->
+                    creator?.let(UserSimpleDto::of)
+                        ?: createdByAdmin?.let(UserSimpleDto::of)
+                        ?: throw IllegalStateException("Neither createdByAdmin nor creator exists")
+                UserTypeEnum.USER ->
+                    creator?.let(UserSimpleDto::of)
+                        ?: createdByUser?.let(UserSimpleDto::of)
+                        ?: throw IllegalStateException("Neither createdByUser nor creator exists")
             }
 }

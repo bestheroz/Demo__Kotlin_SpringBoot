@@ -3,6 +3,7 @@ package com.github.bestheroz.standard.common.dto
 import com.github.bestheroz.demo.entity.Admin
 import com.github.bestheroz.demo.entity.User
 import com.github.bestheroz.standard.common.enums.UserTypeEnum
+import com.github.bestheroz.standard.common.security.Operator
 import io.swagger.v3.oas.annotations.media.Schema
 
 data class UserSimpleDto(
@@ -18,5 +19,7 @@ data class UserSimpleDto(
         fun of(entity: Admin): UserSimpleDto = UserSimpleDto(entity.id!!, entity.getType(), entity.loginId, entity.name)
 
         fun of(entity: User): UserSimpleDto = UserSimpleDto(entity.id!!, entity.getType(), entity.loginId, entity.name)
+
+        fun of(operator: Operator): UserSimpleDto = UserSimpleDto(operator.id, operator.type, operator.loginId, operator.name)
     }
 }
