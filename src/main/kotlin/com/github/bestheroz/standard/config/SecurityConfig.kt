@@ -50,12 +50,12 @@ class SecurityConfig(
 
     @Bean
     fun corsConfigurationSource(): org.springframework.web.cors.CorsConfigurationSource {
-        val configuration: CorsConfiguration = CorsConfiguration()
+        val configuration = CorsConfiguration()
 
-        configuration.addAllowedOrigin("http://localhost:8081")
+        configuration.addAllowedOrigin("http://localhost:3000")
         configuration.addAllowedHeader("*")
         configuration.addAllowedMethod("*")
-        configuration.setAllowCredentials(true)
+        configuration.allowCredentials = true
 
         val source =
             org.springframework.web.cors
