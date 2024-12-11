@@ -71,5 +71,5 @@ abstract class IdCreatedUpdated : IdCreated() {
             when (updatedObjectType) {
                 UserTypeEnum.ADMIN -> UserSimpleDto.of(updatedByAdmin!!)
                 UserTypeEnum.USER -> UserSimpleDto.of(updatedByUser!!)
-            } ?: throw IllegalStateException("Updated user not found")
+            }
 }
