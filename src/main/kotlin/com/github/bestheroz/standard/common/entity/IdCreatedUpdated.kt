@@ -5,7 +5,10 @@ import com.github.bestheroz.demo.entity.User
 import com.github.bestheroz.standard.common.dto.UserSimpleDto
 import com.github.bestheroz.standard.common.enums.UserTypeEnum
 import com.github.bestheroz.standard.common.security.Operator
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.FetchType
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.MappedSuperclass
 import org.hibernate.annotations.JoinColumnOrFormula
 import org.hibernate.annotations.JoinColumnsOrFormulas
 import org.hibernate.annotations.JoinFormula
