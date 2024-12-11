@@ -60,7 +60,7 @@ abstract class IdCreated {
         createdAt = instant
         createdObjectId = operator.id
         createdObjectType = operator.type
-        this.creator = operator
+        creator = operator
     }
 
     val createdBy: UserSimpleDto

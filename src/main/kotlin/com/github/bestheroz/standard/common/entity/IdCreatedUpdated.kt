@@ -59,7 +59,7 @@ abstract class IdCreatedUpdated : IdCreated() {
         updatedAt = instant
         updatedObjectId = operator.id
         updatedObjectType = operator.type
-        this.updater = operator
+        updater = operator
     }
 
     val updatedBy: UserSimpleDto
