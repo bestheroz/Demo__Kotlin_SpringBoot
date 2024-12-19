@@ -8,8 +8,8 @@ plugins {
     kotlin("plugin.jpa") version kotlinVersion
 
     id("com.google.devtools.ksp") version "2.1.0-1.0.29"
-    id("org.springframework.boot") version "3.4.0"
-    id("io.spring.dependency-management") version "1.1.6"
+    id("org.springframework.boot") version "3.4.1"
+    id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "7.0.0.BETA4"
     id("com.github.ben-manes.versions") version "0.51.0"
     idea
@@ -28,7 +28,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.0")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
         mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.2.1")
     }
 }
@@ -70,8 +70,8 @@ dependencies {
     implementation("io.sentry:sentry-logback:8.0.0-rc.2")
 
     // OpenAPI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.6.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.7.0")
 
     // Utility
     implementation("org.fusesource.jansi:jansi:2.4.1")
