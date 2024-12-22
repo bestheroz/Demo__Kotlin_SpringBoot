@@ -29,7 +29,6 @@ repositories {
 dependencyManagement {
     imports {
         mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
-        mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.2.1")
     }
 }
 
@@ -38,8 +37,8 @@ dependencies {
     implementation(kotlin("noarg"))
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    implementation("com.google.dagger:dagger-compiler:2.53.1")
-    ksp("com.google.dagger:dagger-compiler:2.53.1")
+    implementation("com.google.dagger:dagger-compiler:2.54")
+    ksp("com.google.dagger:dagger-compiler:2.54")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
@@ -59,15 +58,10 @@ dependencies {
     implementation("com.mysql:mysql-connector-j:9.1.0")
     implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.10.0")
 
-    // AWS
-    implementation("io.awspring.cloud:spring-cloud-aws-starter")
-    implementation("io.awspring.cloud:spring-cloud-aws-autoconfigure")
-    implementation("com.amazonaws.secretsmanager:aws-secretsmanager-jdbc:2.0.2")
-
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.4.0")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.0.0-rc.2")
-    implementation("io.sentry:sentry-logback:8.0.0-rc.2")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.0.0-rc.3")
+    implementation("io.sentry:sentry-logback:8.0.0-rc.3")
 
     // OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
