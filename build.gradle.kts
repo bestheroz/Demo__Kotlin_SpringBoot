@@ -114,8 +114,6 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     }
 }
 
-configurations {
-    compileOnly {
-        extendsFrom(configurations["annotationProcessor"])
-    }
+configurations.compileOnly {
+    extendsFrom(configurations.annotationProcessor.get())
 }
