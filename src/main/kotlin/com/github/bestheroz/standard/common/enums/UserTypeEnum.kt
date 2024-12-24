@@ -6,8 +6,8 @@ import jakarta.persistence.Converter
 enum class UserTypeEnum(
     private val value: String,
 ) {
-    ADMIN("admin"),
-    USER("user"),
+    ADMIN("ADMIN"),
+    USER("USER"),
     ;
 
     @Converter(autoApply = true)

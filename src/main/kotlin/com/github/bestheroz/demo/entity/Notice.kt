@@ -6,7 +6,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import java.time.Instant
 
-@Entity
+@Entity(name = "notices")
 data class Notice(
     @Column(nullable = false) var title: String = "",
     @Column(nullable = false) var content: String = "",

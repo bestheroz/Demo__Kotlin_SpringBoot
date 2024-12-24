@@ -13,8 +13,8 @@ import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import java.time.Instant
 
-@Entity
-@DiscriminatorValue("user")
+@Entity(name = "users")
+@DiscriminatorValue("users")
 data class User(
     @Column(nullable = false) var loginId: String = "",
     var password: String? = null,

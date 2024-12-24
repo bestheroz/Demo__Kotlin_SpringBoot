@@ -31,7 +31,7 @@ abstract class IdCreatedUpdated : IdCreated() {
         JoinColumnOrFormula(
             formula =
                 JoinFormula(
-                    value = "CASE WHEN updated_object_type = 'admin' THEN updated_object_id ELSE null END",
+                    value = "CASE WHEN updated_object_type = 'ADMIN' THEN updated_object_id ELSE null END",
                     referencedColumnName = "id",
                 ),
         ),
@@ -43,7 +43,7 @@ abstract class IdCreatedUpdated : IdCreated() {
         JoinColumnOrFormula(
             formula =
                 JoinFormula(
-                    value = "CASE WHEN updated_object_type = 'user' THEN updated_object_id ELSE null END",
+                    value = "CASE WHEN updated_object_type = 'USER' THEN updated_object_id ELSE null END",
                     referencedColumnName = "id",
                 ),
         ),
