@@ -40,7 +40,7 @@ class JwtTokenProvider(
             .withClaim("managerFlag", customOperator.managerFlag)
             .withArrayClaim(
                 "authorities",
-                customOperator.authorities.map { it.toString() }.toTypedArray(),
+                customOperator.authorities.map(AuthorityEnum::toString).toTypedArray(),
             ).withExpiresAt(Date.from(Instant.now().plusSeconds(accessTokenExpirationMinutes * 60)))
             .sign(algorithm)
     }
@@ -68,7 +68,7 @@ class JwtTokenProvider(
                 .getClaim("authorities")
                 .asList(String::class.java)
                 .stream()
-                .map { value: String -> AuthorityEnum.valueOf(value) }
+                .map(AuthorityEnum::valueOf)
                 .toList(),
         )
     }
