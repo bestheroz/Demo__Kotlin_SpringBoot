@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -75,7 +76,7 @@ class AdminController(
         @PathVariable id: Long,
         @RequestBody request: AdminUpdateDto.Request,
         @CurrentUser operator: Operator,
-    ): AdminDto.Response = adminService.updateAdmin(id, request, operator)
+    ): AdminDto.Response = runBlocking { adminService.updateAdmin(id, request, operator) }
 
     @PatchMapping("{id}/password")
     @Operation(summary = "관리자 비밀번호 변경")

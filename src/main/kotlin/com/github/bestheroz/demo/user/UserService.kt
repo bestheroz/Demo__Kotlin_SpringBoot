@@ -90,18 +90,20 @@ class UserService(
     fun deleteUser(
         id: Long,
         operator: Operator,
-    ) = userRepository
-        .findById(id)
-        .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
-        .let { user ->
-            user
-                .takeIf { it.removedFlag }
-                ?.let { throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
-            user
-                .takeIf { it.id == operator.id }
-                ?.let { throw BadRequest400Exception(ExceptionCode.CANNOT_REMOVE_YOURSELF) }
-            user.remove(operator)
-        }
+    ) {
+        userRepository
+            .findById(id)
+            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
+            .let { user ->
+                user
+                    .takeIf { it.removedFlag }
+                    ?.let { throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
+                user
+                    .takeIf { it.id == operator.id }
+                    ?.let { throw BadRequest400Exception(ExceptionCode.CANNOT_REMOVE_YOURSELF) }
+                user.remove(operator)
+            }
+    }
 
     @Transactional
     fun changePassword(
@@ -170,11 +172,12 @@ class UserService(
             }
 
     @Transactional
-    fun logout(id: Long) =
+    fun logout(id: Long) {
         userRepository
             .findById(id)
             .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
             .logout()
+    }
 
     fun checkLoginId(
         loginId: String,

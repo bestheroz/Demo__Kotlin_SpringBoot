@@ -26,33 +26,27 @@ class UserController(
     fun getUserList(
         @Schema(example = "1") @RequestParam page: Int,
         @Schema(example = "10") @RequestParam pageSize: Int,
-    ): ListResult<UserDto.Response> =
-        runBlocking {
-            userService.getUserList(UserDto.Request(page, pageSize))
-        }
+    ): ListResult<UserDto.Response> = userService.getUserList(UserDto.Request(page, pageSize))
 
     @GetMapping("check-login-id")
     @Operation(summary = "로그인 아이디 중복 확인")
     fun checkLoginId(
         @Schema(description = "로그인 아이디") @RequestParam loginId: String,
         @Schema(description = "유저 ID") @RequestParam(required = false) userId: Long?,
-    ): Boolean = runBlocking { userService.checkLoginId(loginId, userId) }
+    ): Boolean = userService.checkLoginId(loginId, userId)
 
     @PostMapping("login")
     @Operation(summary = "유저 로그인")
     fun loginUser(
         @RequestBody request: UserLoginDto.Request,
-    ): TokenDto =
-        runBlocking {
-            userService.loginUser(request)
-        }
+    ): TokenDto = userService.loginUser(request)
 
     @GetMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('USER_VIEW')")
     fun getUser(
         @PathVariable id: Long,
-    ): UserDto.Response = runBlocking { userService.getUser(id) }
+    ): UserDto.Response = userService.getUser(id)
 
     @GetMapping("renew-token")
     @Operation(
@@ -65,7 +59,7 @@ class UserController(
     )
     fun renewToken(
         @Schema(description = "리플래시 토큰") @RequestHeader(value = "AuthorizationR") refreshToken: String,
-    ): TokenDto = runBlocking { userService.renewToken(refreshToken) }
+    ): TokenDto = userService.renewToken(refreshToken)
 
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
@@ -73,7 +67,7 @@ class UserController(
     fun createUser(
         @RequestBody request: UserCreateDto.Request,
         @CurrentUser operator: Operator,
-    ): UserDto.Response = runBlocking { userService.createUser(request, operator) }
+    ): UserDto.Response = userService.createUser(request, operator)
 
     @PutMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
@@ -92,7 +86,7 @@ class UserController(
         @PathVariable id: Long,
         @RequestBody request: UserChangePasswordDto.Request,
         @CurrentUser operator: Operator,
-    ): UserDto.Response = runBlocking { userService.changePassword(id, request, operator) }
+    ): UserDto.Response = userService.changePassword(id, request, operator)
 
     @DeleteMapping("logout")
     @Operation(
@@ -106,7 +100,7 @@ class UserController(
     fun logout(
         @CurrentUser operator: Operator,
     ) {
-        runBlocking { userService.logout(operator.id) }
+        userService.logout(operator.id)
     }
 
     @DeleteMapping("{id}")
@@ -118,6 +112,6 @@ class UserController(
         @PathVariable id: Long,
         @CurrentUser operator: Operator,
     ) {
-        runBlocking { userService.deleteUser(id, operator) }
+        userService.deleteUser(id, operator)
     }
 }
