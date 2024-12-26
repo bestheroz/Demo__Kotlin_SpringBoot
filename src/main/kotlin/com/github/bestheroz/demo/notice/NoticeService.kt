@@ -32,13 +32,13 @@ class NoticeService(
             }
         }
 
-    fun createNotice(
+    suspend fun createNotice(
         request: NoticeCreateDto.Request,
         operator: Operator,
     ): NoticeDto.Response = noticeRepository.save(request.toEntity(operator)).let { NoticeDto.Response.of(it) }
 
     @Transactional
-    fun updateNotice(
+    suspend fun updateNotice(
         id: Long,
         request: NoticeCreateDto.Request,
         operator: Operator,
@@ -52,7 +52,7 @@ class NoticeService(
             .let { NoticeDto.Response.of(it) }
 
     @Transactional
-    fun deleteNotice(
+    suspend fun deleteNotice(
         id: Long,
         operator: Operator,
     ) = noticeRepository
