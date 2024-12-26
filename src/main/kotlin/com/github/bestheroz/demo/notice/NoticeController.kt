@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -22,12 +23,18 @@ class NoticeController(
     fun getNoticeList(
         @Schema(example = "1") @RequestParam page: Int,
         @Schema(example = "10") @RequestParam pageSize: Int,
-    ): ListResult<NoticeDto.Response> = noticeService.getNoticeList(NoticeDto.Request(page, pageSize))
+    ): ListResult<NoticeDto.Response> =
+        runBlocking {
+            noticeService.getNoticeList(NoticeDto.Request(page, pageSize))
+        }
 
     @GetMapping("{id}")
     fun getNotice(
         @PathVariable id: Long,
-    ): NoticeDto.Response = noticeService.getNotice(id)
+    ): NoticeDto.Response =
+        runBlocking {
+            noticeService.getNotice(id)
+        }
 
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
