@@ -10,22 +10,25 @@ import com.github.bestheroz.standard.common.exception.Unauthorized401Exception
 import com.github.bestheroz.standard.common.log.logger
 import com.github.bestheroz.standard.common.security.Operator
 import com.github.bestheroz.standard.common.util.PasswordUtil.verifyPassword
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Transactional
 class UserService(
     private val userRepository: UserRepository,
     private val jwtTokenProvider: JwtTokenProvider,
+    private val coroutineScope: CoroutineScope,
 ) {
     companion object {
         private val log = logger()
     }
 
-    @Transactional(readOnly = true)
     fun getUserList(request: UserDto.Request): ListResult<UserDto.Response> =
         userRepository
             .findAllByRemovedFlagIsFalse(
@@ -33,12 +36,12 @@ class UserService(
             ).map(UserDto.Response::of)
             .let { ListResult.of(it) }
 
-    @Transactional(readOnly = true)
     fun getUser(id: Long): UserDto.Response =
         userRepository.findById(id).map(UserDto.Response::of).orElseThrow {
             BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
         }
 
+    @Transactional
     fun createUser(
         request: UserCreateDto.Request,
         operator: Operator,
@@ -49,24 +52,28 @@ class UserService(
         return UserDto.Response.of(userRepository.save(request.toEntity(operator)))
     }
 
-    fun updateUser(
+    @Transactional
+    suspend fun updateUser(
         id: Long,
         request: UserUpdateDto.Request,
         operator: Operator,
-    ): UserDto.Response =
-        userRepository
-            .findById(id)
-            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
-            .let { user ->
-                user
-                    .takeIf { it.removedFlag }
-                    ?.let { throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
+    ): UserDto.Response {
+        val userLoginIdDeferred =
+            coroutineScope.async(Dispatchers.IO) {
+                userRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(request.loginId, id)
+            }
 
-                userRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(request.loginId, id).ifPresent {
-                    throw BadRequest400Exception(ExceptionCode.ALREADY_JOINED_ACCOUNT)
-                }
+        val user =
+            withContext(Dispatchers.IO) { userRepository.findById(id) }
+                .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
+        userLoginIdDeferred.await().ifPresent {
+            throw BadRequest400Exception(ExceptionCode.ALREADY_JOINED_ACCOUNT)
+        }
+        user.takeIf { it.removedFlag }?.let { throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
 
-                user.update(
+        return user
+            .let { it ->
+                it.update(
                     request.loginId,
                     request.password,
                     request.name,
@@ -74,9 +81,12 @@ class UserService(
                     request.authorities,
                     operator,
                 )
-                return UserDto.Response.of(user)
-            }
+                it
+            }.let { userRepository.save(it) }
+            .let { UserDto.Response.of(it) }
+    }
 
+    @Transactional
     fun deleteUser(
         id: Long,
         operator: Operator,
@@ -93,6 +103,7 @@ class UserService(
             user.remove(operator)
         }
 
+    @Transactional
     fun changePassword(
         id: Long,
         request: UserChangePasswordDto.Request,
@@ -118,12 +129,12 @@ class UserService(
                 return UserDto.Response.of(user)
             }
 
+    @Transactional
     fun loginUser(request: UserLoginDto.Request): TokenDto =
         userRepository
             .findByLoginIdAndRemovedFlagFalse(request.loginId)
-            .orElseThrow<BadRequest400Exception> {
-                BadRequest400Exception(ExceptionCode.UNJOINED_ACCOUNT)
-            }.let { user ->
+            .orElseThrow { BadRequest400Exception(ExceptionCode.UNJOINED_ACCOUNT) }
+            .let { user ->
                 user
                     .takeIf { it.removedFlag || !user.useFlag }
                     ?.let { throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
@@ -137,6 +148,7 @@ class UserService(
                 return TokenDto(jwtTokenProvider.createAccessToken(Operator(user)), user.token!!)
             }
 
+    @Transactional
     fun renewToken(refreshToken: String): TokenDto =
         userRepository
             .findById(jwtTokenProvider.getId(refreshToken))
@@ -157,14 +169,13 @@ class UserService(
                 throw Unauthorized401Exception()
             }
 
-    fun logout(id: Long) {
+    @Transactional
+    fun logout(id: Long) =
         userRepository
             .findById(id)
             .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
             .logout()
-    }
 
-    @Transactional(readOnly = true)
     fun checkLoginId(
         loginId: String,
         id: Long?,

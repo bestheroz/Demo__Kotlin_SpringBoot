@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -25,27 +26,33 @@ class UserController(
     fun getUserList(
         @Schema(example = "1") @RequestParam page: Int,
         @Schema(example = "10") @RequestParam pageSize: Int,
-    ): ListResult<UserDto.Response> = userService.getUserList(UserDto.Request(page, pageSize))
+    ): ListResult<UserDto.Response> =
+        runBlocking {
+            userService.getUserList(UserDto.Request(page, pageSize))
+        }
 
     @GetMapping("check-login-id")
     @Operation(summary = "로그인 아이디 중복 확인")
     fun checkLoginId(
         @Schema(description = "로그인 아이디") @RequestParam loginId: String,
         @Schema(description = "유저 ID") @RequestParam(required = false) userId: Long?,
-    ): Boolean = userService.checkLoginId(loginId, userId)
+    ): Boolean = runBlocking { userService.checkLoginId(loginId, userId) }
 
     @PostMapping("login")
     @Operation(summary = "유저 로그인")
     fun loginUser(
         @RequestBody request: UserLoginDto.Request,
-    ): TokenDto = userService.loginUser(request)
+    ): TokenDto =
+        runBlocking {
+            userService.loginUser(request)
+        }
 
     @GetMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('USER_VIEW')")
     fun getUser(
         @PathVariable id: Long,
-    ): UserDto.Response = userService.getUser(id)
+    ): UserDto.Response = runBlocking { userService.getUser(id) }
 
     @GetMapping("renew-token")
     @Operation(
@@ -58,7 +65,7 @@ class UserController(
     )
     fun renewToken(
         @Schema(description = "리플래시 토큰") @RequestHeader(value = "AuthorizationR") refreshToken: String,
-    ): TokenDto = userService.renewToken(refreshToken)
+    ): TokenDto = runBlocking { userService.renewToken(refreshToken) }
 
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
@@ -66,7 +73,7 @@ class UserController(
     fun createUser(
         @RequestBody request: UserCreateDto.Request,
         @CurrentUser operator: Operator,
-    ): UserDto.Response = userService.createUser(request, operator)
+    ): UserDto.Response = runBlocking { userService.createUser(request, operator) }
 
     @PutMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
@@ -75,7 +82,7 @@ class UserController(
         @PathVariable id: Long,
         @RequestBody request: UserUpdateDto.Request,
         @CurrentUser operator: Operator,
-    ): UserDto.Response = userService.updateUser(id, request, operator)
+    ): UserDto.Response = runBlocking { userService.updateUser(id, request, operator) }
 
     @PatchMapping("{id}/password")
     @Operation(summary = "유저 비밀번호 변경")
@@ -85,7 +92,7 @@ class UserController(
         @PathVariable id: Long,
         @RequestBody request: UserChangePasswordDto.Request,
         @CurrentUser operator: Operator,
-    ): UserDto.Response = userService.changePassword(id, request, operator)
+    ): UserDto.Response = runBlocking { userService.changePassword(id, request, operator) }
 
     @DeleteMapping("logout")
     @Operation(
@@ -98,7 +105,9 @@ class UserController(
     @PreAuthorize("hasAuthority('USER_EDIT')")
     fun logout(
         @CurrentUser operator: Operator,
-    ) = userService.logout(operator.id)
+    ) {
+        runBlocking { userService.logout(operator.id) }
+    }
 
     @DeleteMapping("{id}")
     @Operation(description = "(Soft delete)", responses = [ApiResponse(responseCode = "204")])
@@ -108,5 +117,7 @@ class UserController(
     fun deleteUser(
         @PathVariable id: Long,
         @CurrentUser operator: Operator,
-    ) = userService.deleteUser(id, operator)
+    ) {
+        runBlocking { userService.deleteUser(id, operator) }
+    }
 }
