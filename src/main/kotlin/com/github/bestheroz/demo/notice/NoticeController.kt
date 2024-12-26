@@ -42,7 +42,7 @@ class NoticeController(
     fun createNotice(
         @RequestBody request: NoticeCreateDto.Request,
         @CurrentUser operator: Operator,
-    ): NoticeDto.Response = noticeService.createNotice(request, operator)
+    ): NoticeDto.Response = runBlocking { noticeService.createNotice(request, operator) }
 
     @PutMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
@@ -51,7 +51,7 @@ class NoticeController(
         @PathVariable id: Long,
         @RequestBody request: NoticeCreateDto.Request,
         @CurrentUser operator: Operator,
-    ): NoticeDto.Response = noticeService.updateNotice(id, request, operator)
+    ): NoticeDto.Response = runBlocking { noticeService.updateNotice(id, request, operator) }
 
     @DeleteMapping("{id}")
     @Operation(description = "(Soft delete)", responses = [ApiResponse(responseCode = "204")])
@@ -61,5 +61,7 @@ class NoticeController(
     fun deleteNotice(
         @PathVariable id: Long,
         @CurrentUser operator: Operator,
-    ) = noticeService.deleteNotice(id, operator)
+    ) = runBlocking {
+        noticeService.deleteNotice(id, operator)
+    }
 }
