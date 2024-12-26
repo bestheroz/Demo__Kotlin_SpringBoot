@@ -2,11 +2,11 @@ package com.github.bestheroz.standard.common.log
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.lang3.StringUtils
-import org.apache.commons.lang3.time.StopWatch
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
 import org.springframework.stereotype.Component
+import org.springframework.util.StopWatch
 
 @Aspect
 @Component
@@ -32,28 +32,29 @@ class TraceLogger(
             pjp.staticPart.signature
                 .toString()
                 .removePrefix(pjp.staticPart.signature.declaringType.`package`.name + ".")
-        val stopWatch = StopWatch()
+
+        if (signature.containsAny("HealthController", "HealthRepository")) {
+            return pjp.proceed()
+        }
+
+        val stopWatch = StopWatch(signature)
         stopWatch.start()
 
         return try {
-            if (!signature.containsAny("HealthController", "HealthRepository")) {
-                log.info(STR_START_EXECUTE_TIME, signature)
-            }
+            log.info(STR_START_EXECUTE_TIME, signature)
 
             val retVal = pjp.proceed()
             stopWatch.stop()
 
             when {
                 signature.containsAny("Repository.", "RepositoryCustom.", ".domain.") -> {
-                    if (!signature.contains("HealthRepository")) {
-                        log.info(STR_END_EXECUTE_TIME_FOR_REPOSITORY, signature, stopWatch.time)
-                    }
+                    log.info(STR_END_EXECUTE_TIME_FOR_REPOSITORY, signature, stopWatch.totalTimeMillis)
                 }
-                !signature.contains("HealthController") -> {
+                else -> {
                     log.info(
                         STR_END_EXECUTE_TIME,
                         signature,
-                        stopWatch.time,
+                        stopWatch.totalTimeMillis,
                         retVal?.let {
                             val str = objectMapper.writeValueAsString(retVal)
                             str.abbreviate(1000, "--skip massive text-- total length : ${str.length}")
@@ -64,10 +65,8 @@ class TraceLogger(
 
             retVal
         } catch (e: Throwable) {
-            if (stopWatch.isStarted) {
-                stopWatch.stop()
-            }
-            log.info(STR_END_EXECUTE_TIME_FOR_EXCEPTION, signature, stopWatch.time)
+            stopWatch.stop()
+            log.info(STR_END_EXECUTE_TIME_FOR_EXCEPTION, signature, stopWatch.totalTimeMillis)
             throw e
         }
     }
