@@ -5,8 +5,6 @@ import com.github.bestheroz.standard.common.dto.ListResult
 import com.github.bestheroz.standard.common.exception.BadRequest400Exception
 import com.github.bestheroz.standard.common.exception.ExceptionCode
 import com.github.bestheroz.standard.common.security.Operator
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -16,29 +14,26 @@ import org.springframework.transaction.annotation.Transactional
 class NoticeService(
     private val noticeRepository: NoticeRepository,
 ) {
-    suspend fun getNoticeList(request: NoticeDto.Request): ListResult<NoticeDto.Response> =
-        withContext(Dispatchers.IO) {
-            this@NoticeService
-                .noticeRepository
-                .findAllByRemovedFlagIsFalse(
-                    PageRequest.of(request.page - 1, request.pageSize, Sort.by("id").descending()),
-                ).map(NoticeDto.Response::of)
-        }.let { ListResult.of(it) }
+    fun getNoticeList(request: NoticeDto.Request): ListResult<NoticeDto.Response> =
+        noticeRepository
+            .findAllByRemovedFlagIsFalse(
+                PageRequest.of(request.page - 1, request.pageSize, Sort.by("id").descending()),
+            ).map(NoticeDto.Response::of)
+            .let { ListResult.of(it) }
 
-    suspend fun getNotice(id: Long): NoticeDto.Response =
-        withContext(Dispatchers.IO) {
-            noticeRepository.findById(id).map(NoticeDto.Response::of).orElseThrow {
-                BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE)
-            }
+    fun getNotice(id: Long): NoticeDto.Response =
+        noticeRepository.findById(id).map(NoticeDto.Response::of).orElseThrow {
+            BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE)
         }
 
-    suspend fun createNotice(
+    @Transactional
+    fun createNotice(
         request: NoticeCreateDto.Request,
         operator: Operator,
     ): NoticeDto.Response = noticeRepository.save(request.toEntity(operator)).let { NoticeDto.Response.of(it) }
 
     @Transactional
-    suspend fun updateNotice(
+    fun updateNotice(
         id: Long,
         request: NoticeCreateDto.Request,
         operator: Operator,
@@ -52,7 +47,7 @@ class NoticeService(
             .let { NoticeDto.Response.of(it) }
 
     @Transactional
-    suspend fun deleteNotice(
+    fun deleteNotice(
         id: Long,
         operator: Operator,
     ) = noticeRepository
