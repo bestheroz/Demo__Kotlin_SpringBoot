@@ -127,9 +127,11 @@ class UserService(
                 user.password
                     ?.takeIf { it == request.newPassword }
                     ?.let { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
-                user.changePassword(request.newPassword, operator)
-                return UserDto.Response.of(user)
-            }
+                user
+            }.let {
+                it.changePassword(request.newPassword, operator)
+                it
+            }.let(UserDto.Response::of)
 
     @Transactional
     fun loginUser(request: UserLoginDto.Request): TokenDto =
@@ -146,9 +148,11 @@ class UserService(
                         log.warn("password not match")
                         throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
                     }
-                user.renewToken(jwtTokenProvider.createRefreshToken(Operator(user)))
-                return TokenDto(jwtTokenProvider.createAccessToken(Operator(user)), user.token!!)
-            }
+                user
+            }.let {
+                it.renewToken(jwtTokenProvider.createRefreshToken(Operator(it)))
+                it
+            }.let { TokenDto(jwtTokenProvider.createAccessToken(Operator(it)), it.token!!) }
 
     @Transactional
     fun renewToken(refreshToken: String): TokenDto =

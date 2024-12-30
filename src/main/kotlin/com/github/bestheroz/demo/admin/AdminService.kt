@@ -132,9 +132,11 @@ class AdminService(
                 admin.password
                     ?.takeIf { it == request.newPassword }
                     ?.let { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
-                admin.changePassword(request.newPassword, operator)
-                return AdminDto.Response.of(admin)
-            }
+                admin
+            }.let {
+                it.changePassword(request.newPassword, operator)
+                it
+            }.let(AdminDto.Response::of)
 
     @Transactional
     fun loginAdmin(request: AdminLoginDto.Request): TokenDto =
@@ -151,9 +153,11 @@ class AdminService(
                         log.warn("password not match")
                         throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
                     }
-                admin.renewToken(jwtTokenProvider.createRefreshToken(Operator(admin)))
-                return TokenDto(jwtTokenProvider.createAccessToken(Operator(admin)), admin.token ?: "")
-            }
+                admin
+            }.let {
+                it.renewToken(jwtTokenProvider.createRefreshToken(Operator(it)))
+                it
+            }.let { TokenDto(jwtTokenProvider.createAccessToken(Operator(it)), it.token ?: "") }
 
     @Transactional
     fun renewToken(refreshToken: String): TokenDto =
