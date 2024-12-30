@@ -1,6 +1,6 @@
 package com.github.bestheroz.standard.common.enums
 
-import com.github.bestheroz.standard.common.entity.converter.GenericEnumListJsonConverter
+import com.github.bestheroz.standard.common.domain.converter.GenericEnumListJsonConverter
 
 enum class AuthorityEnum(
     private val value: String,
