@@ -125,13 +125,13 @@ class UserService(
                 }
                 it.password
                     ?.takeUnless { PasswordUtil.verifyPassword(request.oldPassword, it) }
-                    ?.also {
+                    ?.let {
                         log.warn("password not match")
                         throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
                     }
                 it.password
                     ?.takeIf { it == request.newPassword }
-                    ?.also { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
+                    ?.let { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
             }.apply { changePassword(request.newPassword, operator) }
             .let(UserDto.Response::of)
 
@@ -146,7 +146,7 @@ class UserService(
                 }
                 it.password
                     ?.takeUnless { password -> PasswordUtil.verifyPassword(request.password, password) }
-                    ?.also {
+                    ?.let {
                         log.warn("password not match")
                         throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
                     }
