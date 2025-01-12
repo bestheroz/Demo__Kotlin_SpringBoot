@@ -75,7 +75,7 @@ class JwtTokenProvider(
 
     fun resolveAccessToken(request: HttpServletRequest): String? =
         request.getHeader("Authorization")?.let {
-            return@resolveAccessToken it.takeIf { it.startsWith("Bearer ") }?.substring(7) ?: it
+            return it.takeIf { it.startsWith("Bearer ") }?.substring(7) ?: it
         }
 
     fun validateToken(token: String): Boolean {

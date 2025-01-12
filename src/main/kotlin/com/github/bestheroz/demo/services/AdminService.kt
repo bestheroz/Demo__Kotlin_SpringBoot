@@ -128,13 +128,13 @@ class AdminService(
                 }
                 it.password
                     ?.takeUnless { PasswordUtil.verifyPassword(request.oldPassword, it) }
-                    ?.let {
+                    ?.also {
                         log.warn("password not match")
                         throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
                     }
                 it.password
                     ?.takeIf { it == request.newPassword }
-                    ?.let { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
+                    ?.also { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
             }.apply { changePassword(request.newPassword, operator) }
             .let(AdminDto.Response::of)
 
@@ -149,7 +149,7 @@ class AdminService(
                 }
                 it.password
                     ?.takeUnless { password -> PasswordUtil.verifyPassword(request.password, password) }
-                    ?.let {
+                    ?.also {
                         log.warn("password not match")
                         throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
                     }
@@ -169,10 +169,10 @@ class AdminService(
                 if (token == refreshToken) {
                     renewToken(jwtTokenProvider.createRefreshToken(Operator(this)))
                 }
-            }.let {
-                it.token?.let { token ->
-                    if (jwtTokenProvider.issuedRefreshTokenIn3Seconds(token) || token == refreshToken) {
-                        return TokenDto(jwtTokenProvider.createAccessToken(Operator(it)), token)
+            }.run {
+                token?.let {
+                    if (jwtTokenProvider.issuedRefreshTokenIn3Seconds(it) || it == refreshToken) {
+                        return TokenDto(jwtTokenProvider.createAccessToken(Operator(this)), it)
                     }
                 }
                 throw Unauthorized401Exception()

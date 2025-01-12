@@ -81,5 +81,5 @@ object DateUtils {
         return text?.let { OffsetDateTime.parse(it, DateTimeFormatter.ofPattern(pattern)) }
     }
 
-    fun parseOffsetDateTimeAtUTC(text: String?): OffsetDateTime? = text?.let { OffsetDateTime.parse(it) }
+    fun parseOffsetDateTimeAtUTC(text: String?): OffsetDateTime? = text?.let(OffsetDateTime::parse)
 }

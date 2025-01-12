@@ -55,7 +55,7 @@ class TraceLogger(
                         STR_END_EXECUTE_TIME,
                         signature,
                         stopWatch.totalTimeMillis,
-                        retVal?.let {
+                        retVal?.run {
                             val str = objectMapper.writeValueAsString(retVal)
                             str.abbreviate(1000, "--skip massive text-- total length : ${str.length}")
                         } ?: "null",
