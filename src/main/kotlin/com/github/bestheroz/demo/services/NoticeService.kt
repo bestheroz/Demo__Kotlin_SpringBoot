@@ -21,7 +21,7 @@ class NoticeService(
             .findAllByRemovedFlagIsFalse(
                 PageRequest.of(request.page - 1, request.pageSize, Sort.by("id").descending()),
             ).map(NoticeDto.Response::of)
-            .let { ListResult.Companion.of(it) }
+            .let(ListResult.Companion::of)
 
     fun getNotice(id: Long): NoticeDto.Response =
         noticeRepository.findById(id).map(NoticeDto.Response::of).orElseThrow {
@@ -32,7 +32,7 @@ class NoticeService(
     fun createNotice(
         request: NoticeCreateDto.Request,
         operator: Operator,
-    ): NoticeDto.Response = noticeRepository.save(request.toEntity(operator)).let { NoticeDto.Response.of(it) }
+    ): NoticeDto.Response = noticeRepository.save(request.toEntity(operator)).let(NoticeDto.Response::of)
 
     @Transactional
     fun updateNotice(
@@ -46,7 +46,7 @@ class NoticeService(
                 notice.update(request.title, request.content, request.useFlag, operator)
                 notice
             }.orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE) }
-            .let { NoticeDto.Response.of(it) }
+            .let(NoticeDto.Response::of)
 
     @Transactional
     fun deleteNotice(
