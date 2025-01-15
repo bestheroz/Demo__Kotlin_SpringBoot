@@ -10,7 +10,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.1.20-Beta1-1.0.29"
     id("org.springframework.boot") version "3.4.1"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "7.0.1"
+    id("com.diffplug.spotless") version "7.0.2"
     id("com.github.ben-manes.versions") version "0.51.0"
     idea
 }
@@ -63,8 +63,8 @@ dependencies {
     implementation("io.sentry:sentry-logback:8.0.0-rc.4")
 
     // OpenAPI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.1")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.3")
 
     // Utility
     implementation("org.fusesource.jansi:jansi:2.4.1")
