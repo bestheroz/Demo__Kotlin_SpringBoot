@@ -7,7 +7,7 @@ plugins {
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("com.google.devtools.ksp") version "2.1.20-Beta2-1.0.29"
+    id("com.google.devtools.ksp") version "2.1.20-Beta2-1.0.30"
     id("org.springframework.boot") version "3.4.2"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "7.0.2"
@@ -42,8 +42,8 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.10.1")
 
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -63,8 +63,8 @@ dependencies {
     implementation("io.sentry:sentry-logback:8.2.0")
 
     // OpenAPI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.4")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.5")
 
     // Utility
     implementation("org.fusesource.jansi:jansi:2.4.1")
