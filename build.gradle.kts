@@ -5,7 +5,7 @@ plugins {
     kotlin("plugin.jpa") version kotlinVersion
 
     id("com.google.devtools.ksp") version "2.1.20-1.0.31"
-    id("org.springframework.boot") version "3.4.3"
+    id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "7.0.2"
     id("com.github.ben-manes.versions") version "0.52.0"
