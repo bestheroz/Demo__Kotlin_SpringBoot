@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "com.github.bestheroz"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
