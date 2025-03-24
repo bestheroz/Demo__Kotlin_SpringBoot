@@ -127,7 +127,7 @@ class AdminService(
                     throw BadRequest400Exception(ExceptionCode.UNKNOWN_ADMIN)
                 }
                 it.password
-                    ?.takeUnless { PasswordUtil.verifyPassword(request.oldPassword, it) }
+                    ?.takeUnless { PasswordUtil.isPasswordValid(request.oldPassword, it) }
                     ?.let {
                         log.warn("password not match")
                         throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
@@ -148,7 +148,7 @@ class AdminService(
                     throw BadRequest400Exception(ExceptionCode.UNKNOWN_ADMIN)
                 }
                 it.password
-                    ?.takeUnless { password -> PasswordUtil.verifyPassword(request.password, password) }
+                    ?.takeUnless { password -> PasswordUtil.isPasswordValid(request.password, password) }
                     ?.let {
                         log.warn("password not match")
                         throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
