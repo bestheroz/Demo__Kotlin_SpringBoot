@@ -4,10 +4,10 @@ plugins {
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("com.google.devtools.ksp") version "2.1.20-1.0.31"
+    id("com.google.devtools.ksp") version "2.1.20-2.0.0"
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "7.0.2"
+    id("com.diffplug.spotless") version "7.0.3"
     id("com.github.ben-manes.versions") version "0.52.0"
     idea
 }
@@ -35,13 +35,13 @@ dependencies {
     implementation(kotlin("noarg"))
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    implementation("com.google.dagger:dagger-compiler:2.56")
-    ksp("com.google.dagger:dagger-compiler:2.56")
+    implementation("com.google.dagger:dagger-compiler:2.56.1")
+    ksp("com.google.dagger:dagger-compiler:2.56.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.10.2")
 
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -53,12 +53,12 @@ dependencies {
 
     // Database
     implementation("com.mysql:mysql-connector-j:9.2.0")
-    implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.10.0")
+    implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.11.0")
 
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.0")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.5.0")
-    implementation("io.sentry:sentry-logback:8.5.0")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.7.0")
+    implementation("io.sentry:sentry-logback:8.7.0")
 
     // OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
@@ -66,14 +66,6 @@ dependencies {
 
     // Utility
     implementation("org.fusesource.jansi:jansi:2.4.1")
-
-    // Test
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }
 
 kotlin {
