@@ -40,6 +40,11 @@ class JwtAuthenticationFilter(
             .stream(SecurityConfig.POST_PUBLIC)
             .map { pattern: String? -> AntPathRequestMatcher(pattern) }
             .toList()
+    private val publicDeletePaths: List<AntPathRequestMatcher> =
+        Arrays
+            .stream(SecurityConfig.DELETE_PUBLIC)
+            .map { pattern: String? -> AntPathRequestMatcher(pattern) }
+            .toList()
 
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
@@ -107,6 +112,11 @@ class JwtAuthenticationFilter(
             }
             HttpMethod.POST.toString() -> {
                 publicPostPaths.stream().anyMatch { matcher: AntPathRequestMatcher ->
+                    matcher.matches(request)
+                }
+            }
+            HttpMethod.DELETE.toString() -> {
+                publicDeletePaths.stream().anyMatch { matcher: AntPathRequestMatcher ->
                     matcher.matches(request)
                 }
             }
