@@ -35,8 +35,8 @@ dependencies {
     implementation(kotlin("noarg"))
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    implementation("com.google.dagger:dagger-compiler:2.56.1")
-    ksp("com.google.dagger:dagger-compiler:2.56.1")
+    implementation("com.google.dagger:dagger-compiler:2.56.2")
+    ksp("com.google.dagger:dagger-compiler:2.56.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // Coroutines
@@ -57,8 +57,8 @@ dependencies {
 
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.0")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.7.0")
-    implementation("io.sentry:sentry-logback:8.7.0")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.8.0")
+    implementation("io.sentry:sentry-logback:8.8.0")
 
     // OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")

@@ -85,6 +85,6 @@ class SecurityConfig(
                 "/api/v1/users/renew-token",
             )
         val POST_PUBLIC: Array<String> = arrayOf("/api/v1/admins/login", "/api/v1/users/login")
-        val DELETE_PUBLIC: Array<String> = arrayOf("/api/v1/admins/logout", "/api/v1/users/logout")
+        val DELETE_PUBLIC: Array<String> = arrayOf()
     }
 }
