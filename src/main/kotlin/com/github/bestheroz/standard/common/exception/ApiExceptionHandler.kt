@@ -4,7 +4,6 @@ import com.github.bestheroz.standard.common.log.logger
 import com.github.bestheroz.standard.common.response.ApiResult
 import com.github.bestheroz.standard.common.response.ApiResult.Companion.of
 import com.github.bestheroz.standard.common.util.LogUtils
-import jakarta.servlet.http.HttpServletResponse
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -15,6 +14,7 @@ import org.springframework.validation.BindException
 import org.springframework.web.HttpMediaTypeNotAcceptableException
 import org.springframework.web.HttpMediaTypeNotSupportedException
 import org.springframework.web.HttpRequestMethodNotSupportedException
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.client.HttpClientErrorException
@@ -92,16 +92,21 @@ class ApiExceptionHandler {
         return ResponseEntity.badRequest().build()
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException::class)
+    fun missingServletRequestParameterException(
+        e: MissingServletRequestParameterException,
+    ): ResponseEntity<ApiResult<*>> {
+        log.warn(LogUtils.getStackTrace(e))
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build()
+    }
+
     @ExceptionHandler(
         HttpMediaTypeNotAcceptableException::class,
         HttpMediaTypeNotSupportedException::class,
         HttpRequestMethodNotSupportedException::class,
         HttpClientErrorException::class,
     )
-    fun httpMediaTypeNotAcceptableException(
-        e: Throwable?,
-        response: HttpServletResponse,
-    ): ResponseEntity<ApiResult<*>> {
+    fun httpMediaTypeNotAcceptableException(e: Throwable?): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
         return ResponseEntity.badRequest().build()
     }
