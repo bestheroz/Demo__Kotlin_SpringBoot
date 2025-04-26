@@ -21,7 +21,7 @@ class CoroutineConfig : DisposableBean {
         CoroutineExceptionHandler { _, exception ->
             log.error(LogUtils.getStackTrace(exception))
         }
-    private val coroutineScope = CoroutineScope(job + Dispatchers.Default + exceptionHandler)
+    private val coroutineScope = CoroutineScope(job + Dispatchers.IO + exceptionHandler)
 
     @Bean fun coroutineScope(): CoroutineScope = coroutineScope
 

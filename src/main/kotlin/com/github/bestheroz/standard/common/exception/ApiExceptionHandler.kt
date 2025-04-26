@@ -14,6 +14,7 @@ import org.springframework.validation.BindException
 import org.springframework.web.HttpMediaTypeNotAcceptableException
 import org.springframework.web.HttpMediaTypeNotSupportedException
 import org.springframework.web.HttpRequestMethodNotSupportedException
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -100,6 +101,15 @@ class ApiExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.UNPROCESSABLE_ENTITY)
             .body(of(ExceptionCode.INVALID_PARAMETER))
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun methodArgumentNotValidException(e: Throwable): ResponseEntity<ApiResult<*>> {
+        log.error(LogUtils.getStackTrace(e))
+        log.error("@CurrentUser 코드 누락됨")
+        return ResponseEntity
+            .internalServerError()
+            .body(of(ExceptionCode.UNKNOWN_SYSTEM_ERROR, "@CurrentUser 코드 누락됨"))
     }
 
     @ExceptionHandler(
