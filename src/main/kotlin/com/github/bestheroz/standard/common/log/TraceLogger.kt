@@ -22,9 +22,11 @@ class TraceLogger(
     }
 
     @Around(
-        "execution(!private * com.github.bestheroz..*Controller.*(..)) || " +
-            "execution(!private * com.github.bestheroz..*Service.*(..)) || " +
-            "execution(!private * com.github.bestheroz..*Repository.*(..))",
+        """
+        execution(!private * com.github.bestheroz..*Controller.*(..)) ||
+        execution(!private * com.github.bestheroz..*Service.*(..)) ||
+        execution(!private * com.github.bestheroz..*Repository.*(..))
+        """,
     )
     @Throws(Throwable::class)
     fun writeLog(pjp: ProceedingJoinPoint): Any? {
