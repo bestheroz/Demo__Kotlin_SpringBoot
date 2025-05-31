@@ -12,12 +12,11 @@ import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.stereotype.Component
+import org.springframework.util.AntPathMatcher
 import org.springframework.web.filter.OncePerRequestFilter
 import org.springframework.web.util.UrlPathHelper
 import java.io.IOException
-import java.util.*
 
 @Component
 class JwtAuthenticationFilter(
@@ -30,21 +29,13 @@ class JwtAuthenticationFilter(
         private val log = logger()
     }
 
-    private val publicGetPaths: List<AntPathRequestMatcher> =
-        Arrays
-            .stream(SecurityConfig.GET_PUBLIC)
-            .map { pattern: String? -> AntPathRequestMatcher(pattern) }
-            .toList()
-    private val publicPostPaths: List<AntPathRequestMatcher> =
-        Arrays
-            .stream(SecurityConfig.POST_PUBLIC)
-            .map { pattern: String? -> AntPathRequestMatcher(pattern) }
-            .toList()
-    private val publicDeletePaths: List<AntPathRequestMatcher> =
-        Arrays
-            .stream(SecurityConfig.DELETE_PUBLIC)
-            .map { pattern: String? -> AntPathRequestMatcher(pattern) }
-            .toList()
+    // AntPathMatcher를 한 개만 생성해두고 재사용
+    private val pathMatcher = AntPathMatcher()
+
+    // SecurityConfig 에 정의된 각 HTTP 메서드별 public 경로 패턴을 문자열 리스트로 변환
+    private val publicGetPatterns: List<String> = SecurityConfig.GET_PUBLIC.toList()
+    private val publicPostPatterns: List<String> = SecurityConfig.POST_PUBLIC.toList()
+    private val publicDeletePatterns: List<String> = SecurityConfig.DELETE_PUBLIC.toList()
 
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
@@ -72,7 +63,7 @@ class JwtAuthenticationFilter(
         stopWatch.start()
 
         try {
-            if (isPublicPath(request)) {
+            if (isPublicPath(request, requestURI)) {
                 filterChain.doFilter(request, response)
                 return
             }
@@ -103,22 +94,23 @@ class JwtAuthenticationFilter(
         }
     }
 
-    private fun isPublicPath(request: HttpServletRequest): Boolean =
+    /**
+     * HTTP 메서드별로 미리 정의된 publicPatterns(List<String>)에 대해 AntPathMatcher.match()를 사용하여 요청 URI가 해당 패턴 중
+     * 하나에 매치되는지 검사
+     */
+    private fun isPublicPath(
+        request: HttpServletRequest,
+        requestURI: String,
+    ): Boolean =
         when (request.method) {
             HttpMethod.GET.toString() -> {
-                publicGetPaths.stream().anyMatch { matcher: AntPathRequestMatcher ->
-                    matcher.matches(request)
-                }
+                publicGetPatterns.any { pattern -> pathMatcher.match(pattern, requestURI) }
             }
             HttpMethod.POST.toString() -> {
-                publicPostPaths.stream().anyMatch { matcher: AntPathRequestMatcher ->
-                    matcher.matches(request)
-                }
+                publicPostPatterns.any { pattern -> pathMatcher.match(pattern, requestURI) }
             }
             HttpMethod.DELETE.toString() -> {
-                publicDeletePaths.stream().anyMatch { matcher: AntPathRequestMatcher ->
-                    matcher.matches(request)
-                }
+                publicDeletePatterns.any { pattern -> pathMatcher.match(pattern, requestURI) }
             }
             else -> {
                 false

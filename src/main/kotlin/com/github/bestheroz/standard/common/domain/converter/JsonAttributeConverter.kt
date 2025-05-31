@@ -8,28 +8,32 @@ import jakarta.persistence.Converter
 @Converter
 class JsonAttributeConverter(
     private val objectMapper: ObjectMapper,
-) : AttributeConverter<Any, String> {
-    override fun convertToDatabaseColumn(attribute: Any): String =
-        try {
+) : AttributeConverter<Any?, String?> {
+    override fun convertToDatabaseColumn(attribute: Any?): String? {
+        if (attribute == null) {
+            return null
+        }
+        return try {
             objectMapper.writeValueAsString(attribute)
         } catch (e: Exception) {
-            throw RuntimeException(e)
+            throw RuntimeException("JSON serialization error: ${e.message}", e)
+        }
+    }
+
+    // DB에서 꺼낸 컬럼 값(dbData)이 null 또는 빈 문자열이면 null 반환
+    override fun convertToEntityAttribute(dbData: String?): Any? {
+        if (dbData.isNullOrEmpty()) {
+            return null
         }
 
-    override fun convertToEntityAttribute(dbData: String?): Any? {
-        try {
-            if (dbData.isNullOrEmpty()) {
-                return null
-            }
-            return if (dbData.startsWith("[")) {
-                objectMapper.readValue<List<Any>>(dbData)
-            } else if (dbData.startsWith("{")) {
-                objectMapper.readValue<Map<String, Any>>(dbData)
-            } else {
-                dbData
+        return try {
+            when {
+                dbData.startsWith("[") -> objectMapper.readValue<List<Any>>(dbData)
+                dbData.startsWith("{") -> objectMapper.readValue<Map<String, Any>>(dbData)
+                else -> dbData
             }
         } catch (e: Exception) {
-            throw RuntimeException(e)
+            throw RuntimeException("JSON deserialization error: ${e.message}", e)
         }
     }
 }
