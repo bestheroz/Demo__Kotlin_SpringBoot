@@ -44,7 +44,6 @@
     <logger name="logging.level.org.springframework.web.filter" level="DEBUG"/>
     <logger name="_org.springframework.web" level="INFO"/>
     <logger name="org.flywaydb.core" level="INFO"/>
-    <logger name="org.apache.ibatis" level="INFO"/>
     <logger name="org.apache.commons.beanutils" level="INFO"/>
     <logger name="com.zaxxer.hikari" level="INFO"/>
     <logger name="org.hibernate" level="INFO"/>
