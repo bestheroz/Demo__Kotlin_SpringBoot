@@ -58,6 +58,7 @@ class SecurityConfig(
         configuration.addAllowedHeader("*")
         configuration.addAllowedMethod("*")
         configuration.allowCredentials = true
+        configuration.exposedHeaders = listOf("Content-Disposition")
 
         val source =
             org.springframework.web.cors

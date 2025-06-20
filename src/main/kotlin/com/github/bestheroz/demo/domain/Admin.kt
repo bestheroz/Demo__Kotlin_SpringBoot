@@ -11,8 +11,8 @@ import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import java.time.Instant
 
-@Entity(name = "admins")
-@DiscriminatorValue("admins")
+@Entity(name = "admin")
+@DiscriminatorValue("admin")
 data class Admin(
     @Column(nullable = false) var loginId: String = "",
     var password: String? = null,

@@ -1,11 +1,11 @@
 plugins {
-    val kotlinVersion = "2.2.0-RC"
+    val kotlinVersion = "2.2.0-RC3"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("com.google.devtools.ksp") version "2.2.0-RC-2.0.1"
-    id("org.springframework.boot") version "3.5.0"
+    id("com.google.devtools.ksp") version "2.2.0-RC3-2.0.2"
+    id("org.springframework.boot") version "3.5.2"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "7.0.4"
     id("com.github.ben-manes.versions") version "0.52.0"
@@ -26,7 +26,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.0")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.2")
     }
 }
 
@@ -57,12 +57,12 @@ dependencies {
 
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.0")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.13.2")
-    implementation("io.sentry:sentry-logback:8.13.2")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.14.0")
+    implementation("io.sentry:sentry-logback:8.14.0")
 
     // OpenAPI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.8")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.9")
 
     // Utility
     implementation("org.fusesource.jansi:jansi:2.4.2")
