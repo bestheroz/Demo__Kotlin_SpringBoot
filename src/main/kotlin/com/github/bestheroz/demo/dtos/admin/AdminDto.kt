@@ -13,6 +13,15 @@ class AdminDto {
         val page: Int,
         @Schema(description = "페이지 크기", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
         val pageSize: Int,
+        @Schema(description = "ID(KEY)", requiredMode = Schema.RequiredMode.NOT_REQUIRED) val id: Long?,
+        @Schema(description = "로그인 아이디", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        val loginId: String?,
+        @Schema(description = "관리자 이름", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        val name: String?,
+        @Schema(description = "사용 여부", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        val useFlag: Boolean?,
+        @Schema(description = "매니저 여부(모든 권한 소유)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        val managerFlag: Boolean?,
     )
 
     data class Response(

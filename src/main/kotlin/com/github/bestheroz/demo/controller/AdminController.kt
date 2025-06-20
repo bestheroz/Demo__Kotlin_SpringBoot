@@ -40,10 +40,7 @@ class AdminController(
     @GetMapping
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('ADMIN_VIEW')")
-    fun getAdminList(
-        @Schema(example = "1") @RequestParam page: Int,
-        @Schema(example = "10") @RequestParam pageSize: Int,
-    ): ListResult<AdminDto.Response> = adminService.getAdminList(AdminDto.Request(page, pageSize))
+    fun getAdminList(payload: AdminDto.Request): ListResult<AdminDto.Response> = adminService.getAdminList(payload)
 
     @GetMapping("check-login-id")
     @Operation(summary = "로그인 아이디 중복 확인")
@@ -55,8 +52,8 @@ class AdminController(
     @PostMapping("login")
     @Operation(summary = "관리자 로그인")
     fun loginAdmin(
-        @RequestBody request: AdminLoginDto.Request,
-    ): TokenDto = adminService.loginAdmin(request)
+        @RequestBody payload: AdminLoginDto.Request,
+    ): TokenDto = adminService.loginAdmin(payload)
 
     @GetMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
@@ -82,18 +79,18 @@ class AdminController(
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('ADMIN_EDIT')")
     fun createAdmin(
-        @RequestBody request: AdminCreateDto.Request,
+        @RequestBody payload: AdminCreateDto.Request,
         @CurrentUser operator: Operator,
-    ): AdminDto.Response = adminService.createAdmin(request, operator)
+    ): AdminDto.Response = adminService.createAdmin(payload, operator)
 
     @PutMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('ADMIN_EDIT')")
     fun updateAdmin(
         @PathVariable id: Long,
-        @RequestBody request: AdminUpdateDto.Request,
+        @RequestBody payload: AdminUpdateDto.Request,
         @CurrentUser operator: Operator,
-    ): AdminDto.Response = runBlocking { adminService.updateAdmin(id, request, operator) }
+    ): AdminDto.Response = runBlocking { adminService.updateAdmin(id, payload, operator) }
 
     @PatchMapping("{id}/password")
     @Operation(summary = "관리자 비밀번호 변경")
@@ -101,9 +98,9 @@ class AdminController(
     @PreAuthorize("hasAuthority('ADMIN_EDIT')")
     fun changePassword(
         @PathVariable id: Long,
-        @RequestBody request: AdminChangePasswordDto.Request,
+        @RequestBody payload: AdminChangePasswordDto.Request,
         @CurrentUser operator: Operator,
-    ): AdminDto.Response = adminService.changePassword(id, request, operator)
+    ): AdminDto.Response = adminService.changePassword(id, payload, operator)
 
     @DeleteMapping("logout")
     @Operation(

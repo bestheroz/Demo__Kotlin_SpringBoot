@@ -12,6 +12,10 @@ class NoticeDto {
         val page: Int,
         @Schema(description = "페이지 크기", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
         val pageSize: Int,
+        @Schema(description = "ID(KEY)", requiredMode = Schema.RequiredMode.NOT_REQUIRED) val id: Long?,
+        @Schema(description = "제목", requiredMode = Schema.RequiredMode.NOT_REQUIRED) val title: String?,
+        @Schema(description = "사용 여부", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        val useFlag: Boolean?,
     )
 
     data class Response(

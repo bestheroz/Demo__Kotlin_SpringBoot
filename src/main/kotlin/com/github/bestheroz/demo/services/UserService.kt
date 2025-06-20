@@ -6,6 +6,7 @@ import com.github.bestheroz.demo.dtos.user.UserDto
 import com.github.bestheroz.demo.dtos.user.UserLoginDto
 import com.github.bestheroz.demo.dtos.user.UserUpdateDto
 import com.github.bestheroz.demo.repository.UserRepository
+import com.github.bestheroz.demo.repository.UserSpecification
 import com.github.bestheroz.standard.common.authenticate.JwtTokenProvider
 import com.github.bestheroz.standard.common.dto.ListResult
 import com.github.bestheroz.standard.common.dto.TokenDto
@@ -20,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -33,10 +35,19 @@ class UserService(
         private val log = logger()
     }
 
-    fun getUserList(request: UserDto.Request): ListResult<UserDto.Response> =
+    fun getUserList(payload: UserDto.Request): ListResult<UserDto.Response> =
         userRepository
-            .findAllByRemovedFlagIsFalse(
-                PageRequest.of(request.page - 1, request.pageSize, Sort.by("id").descending()),
+            .findAll(
+                Specification.allOf(
+                    listOfNotNull(
+                        UserSpecification.removedFlagIsFalse(),
+                        payload.id?.let { UserSpecification.equalId(it) },
+                        payload.loginId?.let { UserSpecification.containsLoginId(it) },
+                        payload.name?.let { UserSpecification.containsName(it) },
+                        payload.useFlag?.let { UserSpecification.equalUseFlag(it) },
+                    ),
+                ),
+                PageRequest.of(payload.page - 1, payload.pageSize, Sort.by("id").descending()),
             ).map(UserDto.Response::of)
             .let(ListResult.Companion::of)
 
@@ -47,24 +58,24 @@ class UserService(
 
     @Transactional
     fun createUser(
-        request: UserCreateDto.Request,
+        payload: UserCreateDto.Request,
         operator: Operator,
     ): UserDto.Response {
-        userRepository.findByLoginIdAndRemovedFlagFalse(request.loginId).ifPresent {
+        userRepository.findByLoginIdAndRemovedFlagFalse(payload.loginId).ifPresent {
             throw BadRequest400Exception(ExceptionCode.ALREADY_JOINED_ACCOUNT)
         }
-        return userRepository.save(request.toEntity(operator)).let(UserDto.Response::of)
+        return userRepository.save(payload.toEntity(operator)).let(UserDto.Response::of)
     }
 
     @Transactional
     suspend fun updateUser(
         id: Long,
-        request: UserUpdateDto.Request,
+        payload: UserUpdateDto.Request,
         operator: Operator,
     ): UserDto.Response {
         val userLoginIdDeferred =
             coroutineScope.async(Dispatchers.IO) {
-                userRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(request.loginId, id)
+                userRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(payload.loginId, id)
             }
         val userDeferred = coroutineScope.async(Dispatchers.IO) { userRepository.findById(id) }
 
@@ -81,11 +92,11 @@ class UserService(
                 }
             }.apply {
                 update(
-                    request.loginId,
-                    request.password,
-                    request.name,
-                    request.useFlag,
-                    request.authorities,
+                    payload.loginId,
+                    payload.password,
+                    payload.name,
+                    payload.useFlag,
+                    payload.authorities,
                     operator,
                 )
                 userRepository.save(this)
@@ -113,7 +124,7 @@ class UserService(
     @Transactional
     fun changePassword(
         id: Long,
-        request: UserChangePasswordDto.Request,
+        payload: UserChangePasswordDto.Request,
         operator: Operator,
     ): UserDto.Response =
         userRepository
@@ -124,28 +135,28 @@ class UserService(
                     throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
                 }
                 it.password
-                    ?.takeUnless { PasswordUtil.isPasswordValid(request.oldPassword, it) }
+                    ?.takeUnless { PasswordUtil.isPasswordValid(payload.oldPassword, it) }
                     ?.let {
                         log.warn("password not match")
                         throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
                     }
                 it.password
-                    ?.takeIf { it == request.newPassword }
+                    ?.takeIf { it == payload.newPassword }
                     ?.let { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
-            }.apply { changePassword(request.newPassword, operator) }
+            }.apply { changePassword(payload.newPassword, operator) }
             .let(UserDto.Response::of)
 
     @Transactional
-    fun loginUser(request: UserLoginDto.Request): TokenDto =
+    fun loginUser(payload: UserLoginDto.Request): TokenDto =
         userRepository
-            .findByLoginIdAndRemovedFlagFalse(request.loginId)
+            .findByLoginIdAndRemovedFlagFalse(payload.loginId)
             .orElseThrow { BadRequest400Exception(ExceptionCode.UNJOINED_ACCOUNT) }
             .also {
                 if (it.removedFlag || !it.useFlag) {
                     throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
                 }
                 it.password
-                    ?.takeUnless { password -> PasswordUtil.isPasswordValid(request.password, password) }
+                    ?.takeUnless { password -> PasswordUtil.isPasswordValid(payload.password, password) }
                     ?.let {
                         log.warn("password not match")
                         throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)

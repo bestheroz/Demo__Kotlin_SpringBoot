@@ -49,7 +49,12 @@ class TraceLogger(
             stopWatch.stop()
 
             when {
-                signature.containsAny("Repository.", "RepositoryCustom.", ".domain.") -> {
+                signature.containsAny(
+                    "Repository.",
+                    "RepositoryCustom.",
+                    ".domain.",
+                    "SpecificationExecutor.",
+                ) -> {
                     log.info(STR_END_EXECUTE_TIME_FOR_REPOSITORY, signature, stopWatch.totalTimeMillis)
                 }
                 else -> {

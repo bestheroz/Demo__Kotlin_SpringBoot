@@ -6,6 +6,7 @@ import com.github.bestheroz.demo.dtos.admin.AdminDto
 import com.github.bestheroz.demo.dtos.admin.AdminLoginDto
 import com.github.bestheroz.demo.dtos.admin.AdminUpdateDto
 import com.github.bestheroz.demo.repository.AdminRepository
+import com.github.bestheroz.demo.repository.AdminSpecification
 import com.github.bestheroz.standard.common.authenticate.JwtTokenProvider
 import com.github.bestheroz.standard.common.dto.ListResult
 import com.github.bestheroz.standard.common.dto.TokenDto
@@ -20,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -34,10 +36,20 @@ class AdminService(
         private val log = logger()
     }
 
-    fun getAdminList(request: AdminDto.Request): ListResult<AdminDto.Response> =
+    fun getAdminList(payload: AdminDto.Request): ListResult<AdminDto.Response> =
         adminRepository
-            .findAllByRemovedFlagIsFalse(
-                PageRequest.of(request.page - 1, request.pageSize, Sort.by("id").descending()),
+            .findAll(
+                Specification.allOf(
+                    listOfNotNull(
+                        AdminSpecification.removedFlagIsFalse(),
+                        payload.id?.let { AdminSpecification.equalId(it) },
+                        payload.loginId?.let { AdminSpecification.containsLoginId(it) },
+                        payload.name?.let { AdminSpecification.containsName(it) },
+                        payload.useFlag?.let { AdminSpecification.equalUseFlag(it) },
+                        payload.managerFlag?.let { AdminSpecification.equalManagerFlag(it) },
+                    ),
+                ),
+                PageRequest.of(payload.page - 1, payload.pageSize, Sort.by("id").descending()),
             ).map(AdminDto.Response::of)
             .let(ListResult.Companion::of)
 
@@ -48,24 +60,24 @@ class AdminService(
 
     @Transactional
     fun createAdmin(
-        request: AdminCreateDto.Request,
+        payload: AdminCreateDto.Request,
         operator: Operator,
     ): AdminDto.Response {
-        adminRepository.findByLoginIdAndRemovedFlagFalse(request.loginId).ifPresent {
+        adminRepository.findByLoginIdAndRemovedFlagFalse(payload.loginId).ifPresent {
             throw BadRequest400Exception(ExceptionCode.ALREADY_JOINED_ACCOUNT)
         }
-        return adminRepository.save(request.toEntity(operator)).let(AdminDto.Response::of)
+        return adminRepository.save(payload.toEntity(operator)).let(AdminDto.Response::of)
     }
 
     @Transactional
     suspend fun updateAdmin(
         id: Long,
-        request: AdminUpdateDto.Request,
+        payload: AdminUpdateDto.Request,
         operator: Operator,
     ): AdminDto.Response {
         val adminLoginIdDeferred =
             coroutineScope.async(Dispatchers.IO) {
-                adminRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(request.loginId, id)
+                adminRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(payload.loginId, id)
             }
         val adminDeferred = coroutineScope.async(Dispatchers.IO) { adminRepository.findById(id) }
 
@@ -80,17 +92,17 @@ class AdminService(
                 if (it.removedFlag) {
                     throw BadRequest400Exception(ExceptionCode.UNKNOWN_ADMIN)
                 }
-                if (!request.managerFlag && it.id == operator.id) {
+                if (!payload.managerFlag && it.id == operator.id) {
                     throw BadRequest400Exception(ExceptionCode.CANNOT_UPDATE_YOURSELF)
                 }
             }.apply {
                 update(
-                    request.loginId,
-                    request.password,
-                    request.name,
-                    request.useFlag,
-                    request.managerFlag,
-                    request.authorities,
+                    payload.loginId,
+                    payload.password,
+                    payload.name,
+                    payload.useFlag,
+                    payload.managerFlag,
+                    payload.authorities,
                     operator,
                 )
                 adminRepository.save(this)
@@ -116,7 +128,7 @@ class AdminService(
     @Transactional
     fun changePassword(
         id: Long,
-        request: AdminChangePasswordDto.Request,
+        payload: AdminChangePasswordDto.Request,
         operator: Operator,
     ): AdminDto.Response =
         adminRepository
@@ -127,28 +139,28 @@ class AdminService(
                     throw BadRequest400Exception(ExceptionCode.UNKNOWN_ADMIN)
                 }
                 it.password
-                    ?.takeUnless { PasswordUtil.isPasswordValid(request.oldPassword, it) }
+                    ?.takeUnless { PasswordUtil.isPasswordValid(payload.oldPassword, it) }
                     ?.let {
                         log.warn("password not match")
                         throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
                     }
                 it.password
-                    ?.takeIf { it == request.newPassword }
+                    ?.takeIf { it == payload.newPassword }
                     ?.let { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
-            }.apply { changePassword(request.newPassword, operator) }
+            }.apply { changePassword(payload.newPassword, operator) }
             .let(AdminDto.Response::of)
 
     @Transactional
-    fun loginAdmin(request: AdminLoginDto.Request): TokenDto =
+    fun loginAdmin(payload: AdminLoginDto.Request): TokenDto =
         adminRepository
-            .findByLoginIdAndRemovedFlagFalse(request.loginId)
+            .findByLoginIdAndRemovedFlagFalse(payload.loginId)
             .orElseThrow { BadRequest400Exception(ExceptionCode.UNJOINED_ACCOUNT) }
             .also {
                 if (!it.useFlag || it.removedFlag) {
                     throw BadRequest400Exception(ExceptionCode.UNKNOWN_ADMIN)
                 }
                 it.password
-                    ?.takeUnless { password -> PasswordUtil.isPasswordValid(request.password, password) }
+                    ?.takeUnless { password -> PasswordUtil.isPasswordValid(payload.password, password) }
                     ?.let {
                         log.warn("password not match")
                         throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)

@@ -40,10 +40,7 @@ class UserController(
     @GetMapping
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('USER_VIEW')")
-    fun getUserList(
-        @Schema(example = "1") @RequestParam page: Int,
-        @Schema(example = "10") @RequestParam pageSize: Int,
-    ): ListResult<UserDto.Response> = userService.getUserList(UserDto.Request(page, pageSize))
+    fun getUserList(payload: UserDto.Request): ListResult<UserDto.Response> = userService.getUserList(payload)
 
     @GetMapping("check-login-id")
     @Operation(summary = "로그인 아이디 중복 확인")
@@ -55,8 +52,8 @@ class UserController(
     @PostMapping("login")
     @Operation(summary = "유저 로그인")
     fun loginUser(
-        @RequestBody request: UserLoginDto.Request,
-    ): TokenDto = userService.loginUser(request)
+        @RequestBody payload: UserLoginDto.Request,
+    ): TokenDto = userService.loginUser(payload)
 
     @GetMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
@@ -82,18 +79,18 @@ class UserController(
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('USER_EDIT')")
     fun createUser(
-        @RequestBody request: UserCreateDto.Request,
+        @RequestBody payload: UserCreateDto.Request,
         @CurrentUser operator: Operator,
-    ): UserDto.Response = userService.createUser(request, operator)
+    ): UserDto.Response = userService.createUser(payload, operator)
 
     @PutMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('USER_EDIT')")
     fun updateUser(
         @PathVariable id: Long,
-        @RequestBody request: UserUpdateDto.Request,
+        @RequestBody payload: UserUpdateDto.Request,
         @CurrentUser operator: Operator,
-    ): UserDto.Response = runBlocking { userService.updateUser(id, request, operator) }
+    ): UserDto.Response = runBlocking { userService.updateUser(id, payload, operator) }
 
     @PatchMapping("{id}/password")
     @Operation(summary = "유저 비밀번호 변경")
@@ -101,9 +98,9 @@ class UserController(
     @PreAuthorize("hasAuthority('USER_EDIT')")
     fun changePassword(
         @PathVariable id: Long,
-        @RequestBody request: UserChangePasswordDto.Request,
+        @RequestBody payload: UserChangePasswordDto.Request,
         @CurrentUser operator: Operator,
-    ): UserDto.Response = userService.changePassword(id, request, operator)
+    ): UserDto.Response = userService.changePassword(id, payload, operator)
 
     @DeleteMapping("logout")
     @Operation(
