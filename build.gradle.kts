@@ -1,10 +1,10 @@
 plugins {
-    val kotlinVersion = "2.2.0-RC3"
+    val kotlinVersion = "2.2.0"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("com.google.devtools.ksp") version "2.2.0-RC3-2.0.2"
+    id("com.google.devtools.ksp") version "2.2.0-2.0.2"
     id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "7.0.4"
@@ -57,8 +57,8 @@ dependencies {
 
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.0")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.14.0")
-    implementation("io.sentry:sentry-logback:8.14.0")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.16.0")
+    implementation("io.sentry:sentry-logback:8.16.0")
 
     // OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
