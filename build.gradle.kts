@@ -7,7 +7,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.2.0-2.0.2"
     id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "7.0.4"
+    id("com.diffplug.spotless") version "7.1.0"
     id("com.github.ben-manes.versions") version "0.52.0"
     idea
 }
@@ -57,8 +57,8 @@ dependencies {
 
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.0")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.16.0")
-    implementation("io.sentry:sentry-logback:8.16.0")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.16.1-alpha.2")
+    implementation("io.sentry:sentry-logback:8.16.1-alpha.2")
 
     // OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
@@ -84,8 +84,8 @@ tasks.bootJar {
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     kotlin {
-        ktfmt("0.54").googleStyle()
-        ktlint("1.5.0").editorConfigOverride(
+        ktfmt("0.56").googleStyle()
+        ktlint("1.6.0").editorConfigOverride(
             mapOf(
                 "ktlint_code_style" to "ktlint_official",
                 "ktlint_standard_no-wildcard-imports" to "disabled",
@@ -95,7 +95,7 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     }
 
     kotlinGradle {
-        ktlint("1.5.0")
+        ktlint("1.6.0")
     }
 }
 
