@@ -104,12 +104,18 @@ class ApiExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun methodArgumentNotValidException(e: Throwable): ResponseEntity<ApiResult<*>> {
-        log.error(LogUtils.getStackTrace(e))
-        log.error("@CurrentUser 코드 누락됨")
+    fun methodArgumentNotValidException(
+        e: MethodArgumentNotValidException,
+    ): ResponseEntity<ApiResult<*>> {
+        val errors =
+            e.bindingResult.fieldErrors
+                .map { "${it.field}: ${it.defaultMessage}" }
+                .joinToString(", ")
+
+        log.warn("Validation failed: $errors")
         return ResponseEntity
-            .internalServerError()
-            .body(of(ExceptionCode.UNKNOWN_SYSTEM_ERROR, "@CurrentUser 코드 누락됨"))
+            .status(HttpStatus.BAD_REQUEST)
+            .body(of(ExceptionCode.INVALID_PARAMETER, errors))
     }
 
     @ExceptionHandler(

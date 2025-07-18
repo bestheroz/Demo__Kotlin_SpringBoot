@@ -53,8 +53,8 @@ data class Admin(
             managerFlag = managerFlag,
             _authorities = authorities,
         ).apply {
-            this.password = getPasswordHash(password)
             val now = Instant.now()
+            this.password = getPasswordHash(password)
             this.joinedAt = now
             this.removedFlag = false
             this.setCreatedBy(operator, now)
@@ -86,7 +86,7 @@ data class Admin(
         this.managerFlag = managerFlag
         this.authorities = authorities
         val now = Instant.now()
-        setUpdatedBy(operator, now)
+        this.setUpdatedBy(operator, now)
         password?.let {
             this.password = getPasswordHash(password)
             this.changePasswordAt = now
@@ -100,22 +100,24 @@ data class Admin(
         this.password = getPasswordHash(password)
         val now = Instant.now()
         this.changePasswordAt = now
-        setUpdatedBy(operator, now)
+        // TODO: 여기서 오류가 발생하는 이유가 무엇인가?
+        println(operator)
+        this.setUpdatedBy(operator, now)
     }
 
     fun remove(operator: Operator) {
-        removedFlag = true
+        this.removedFlag = true
         val now = Instant.now()
-        removedAt = now
-        setUpdatedBy(operator, now)
+        this.removedAt = now
+        this.setUpdatedBy(operator, now)
     }
 
     fun renewToken(token: String) {
         this.token = token
-        latestActiveAt = Instant.now()
+        this.latestActiveAt = Instant.now()
     }
 
     fun logout() {
-        token = null
+        this.token = null
     }
 }

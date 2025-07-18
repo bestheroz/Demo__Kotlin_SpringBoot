@@ -8,6 +8,8 @@ import com.github.bestheroz.standard.common.dto.ListResult
 import com.github.bestheroz.standard.common.exception.BadRequest400Exception
 import com.github.bestheroz.standard.common.exception.ExceptionCode
 import com.github.bestheroz.standard.common.security.Operator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
@@ -15,12 +17,13 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional(readOnly = true)
 class NoticeService(
     private val noticeRepository: NoticeRepository,
 ) {
-    fun getNoticeList(payload: NoticeDto.Request): ListResult<NoticeDto.Response> =
-        noticeRepository
-            .findAll(
+    suspend fun getNoticeList(payload: NoticeDto.Request): ListResult<NoticeDto.Response> =
+        withContext(Dispatchers.IO) {
+            noticeRepository.findAll(
                 Specification.allOf(
                     listOfNotNull(
                         NoticeSpecification.removedFlagIsFalse(),
@@ -30,40 +33,48 @@ class NoticeService(
                     ),
                 ),
                 PageRequest.of(payload.page - 1, payload.pageSize, Sort.by("id").descending()),
-            ).map(NoticeDto.Response::of)
+            )
+        }.map(NoticeDto.Response::of)
             .let(ListResult.Companion::of)
 
-    fun getNotice(id: Long): NoticeDto.Response =
-        noticeRepository.findById(id).map(NoticeDto.Response::of).orElseThrow {
-            BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE)
-        }
+    suspend fun getNotice(id: Long): NoticeDto.Response =
+        withContext(Dispatchers.IO) { noticeRepository.findById(id) }
+            .map(NoticeDto.Response::of)
+            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE) }
 
     @Transactional
-    fun createNotice(
+    suspend fun createNotice(
         payload: NoticeCreateDto.Request,
         operator: Operator,
-    ): NoticeDto.Response = noticeRepository.save(payload.toEntity(operator)).let(NoticeDto.Response::of)
+    ): NoticeDto.Response =
+        withContext(Dispatchers.IO) { noticeRepository.save(payload.toEntity(operator)) }
+            .let(NoticeDto.Response::of)
 
     @Transactional
-    fun updateNotice(
+    suspend fun updateNotice(
         id: Long,
         payload: NoticeCreateDto.Request,
         operator: Operator,
     ): NoticeDto.Response =
-        noticeRepository
-            .findById(id)
+        withContext(Dispatchers.IO) { noticeRepository.findById(id) }
             .map { notice ->
                 notice.update(payload.title, payload.content, payload.useFlag, operator)
-                notice
+                noticeRepository.save(notice)
             }.orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE) }
             .let(NoticeDto.Response::of)
 
     @Transactional
-    fun deleteNotice(
+    suspend fun deleteNotice(
         id: Long,
         operator: Operator,
-    ) = noticeRepository
-        .findById(id)
-        .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE) }
-        .remove(operator)
+    ) {
+        val notice =
+            withContext(Dispatchers.IO) {
+                noticeRepository.findById(id).orElseThrow {
+                    BadRequest400Exception(ExceptionCode.UNKNOWN_NOTICE)
+                }
+            }
+        notice.remove(operator)
+        withContext(Dispatchers.IO) { noticeRepository.save(notice) }
+    }
 }
