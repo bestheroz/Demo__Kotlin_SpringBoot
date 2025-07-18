@@ -138,44 +138,47 @@ class AdminService(
         id: Long,
         payload: AdminChangePasswordDto.Request,
         operator: Operator,
-    ): AdminDto.Response =
-        withContext(Dispatchers.IO) { adminRepository.findById(id) }
-            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_ADMIN) }
-            .also {
-                if (it.removedFlag) {
-                    throw BadRequest400Exception(ExceptionCode.UNKNOWN_ADMIN)
-                }
-                it.password
-                    ?.takeUnless { password -> PasswordUtil.isPasswordValid(payload.oldPassword, password) }
-                    ?.let {
-                        log.warn("password not match")
-                        throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
-                    }
-                it.password
-                    ?.takeIf { password -> PasswordUtil.isPasswordValid(payload.newPassword, password) }
-                    ?.let { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
-            }.apply { changePassword(payload.newPassword, operator) }
-            .let { withContext(Dispatchers.IO) { adminRepository.save(it) } }
-            .let(AdminDto.Response::of)
+    ): AdminDto.Response {
+        val admin =
+            withContext(Dispatchers.IO) { adminRepository.findById(id) }
+                .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_ADMIN) }
+        if (admin.removedFlag) {
+            throw BadRequest400Exception(ExceptionCode.UNKNOWN_ADMIN)
+        }
+        admin.password
+            ?.takeUnless { password -> PasswordUtil.isPasswordValid(payload.oldPassword, password) }
+            ?.let {
+                log.warn("password not match")
+                throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
+            }
+        admin.password
+            ?.takeIf { password -> PasswordUtil.isPasswordValid(payload.newPassword, password) }
+            ?.let { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
+
+        admin.changePassword(payload.newPassword, operator)
+        withContext(Dispatchers.IO) { adminRepository.save(admin) }
+        return admin.let(AdminDto.Response::of)
+    }
 
     @Transactional
-    suspend fun loginAdmin(payload: AdminLoginDto.Request): TokenDto =
-        withContext(Dispatchers.IO) {
-            adminRepository.findByLoginIdAndRemovedFlagFalse(payload.loginId)
-        }.orElseThrow { BadRequest400Exception(ExceptionCode.UNJOINED_ACCOUNT) }
-            .also {
-                if (!it.useFlag || it.removedFlag) {
-                    throw BadRequest400Exception(ExceptionCode.UNKNOWN_ADMIN)
-                }
-                it.password
-                    ?.takeUnless { password -> PasswordUtil.isPasswordValid(payload.password, password) }
-                    ?.let {
-                        log.warn("password not match")
-                        throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
-                    }
-            }.apply { renewToken(jwtTokenProvider.createRefreshToken(Operator(this))) }
-            .let { withContext(Dispatchers.IO) { adminRepository.save(it) } }
-            .let { TokenDto(jwtTokenProvider.createAccessToken(Operator(it)), it.token ?: "") }
+    suspend fun loginAdmin(payload: AdminLoginDto.Request): TokenDto {
+        val admin =
+            withContext(Dispatchers.IO) {
+                adminRepository.findByLoginIdAndRemovedFlagFalse(payload.loginId)
+            }.orElseThrow { BadRequest400Exception(ExceptionCode.UNJOINED_ACCOUNT) }
+        if (!admin.useFlag || admin.removedFlag) {
+            throw BadRequest400Exception(ExceptionCode.UNKNOWN_ADMIN)
+        }
+        admin.password
+            ?.takeUnless { password -> PasswordUtil.isPasswordValid(payload.password, password) }
+            ?.let {
+                log.warn("password not match")
+                throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
+            }
+        admin.renewToken(jwtTokenProvider.createRefreshToken(Operator(admin)))
+        withContext(Dispatchers.IO) { adminRepository.save(admin) }
+        return admin.let { TokenDto(jwtTokenProvider.createAccessToken(Operator(it)), it.token ?: "") }
+    }
 
     @Transactional
     suspend fun renewToken(refreshToken: String): TokenDto =

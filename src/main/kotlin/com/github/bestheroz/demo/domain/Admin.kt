@@ -100,8 +100,6 @@ data class Admin(
         this.password = getPasswordHash(password)
         val now = Instant.now()
         this.changePasswordAt = now
-        // TODO: 여기서 오류가 발생하는 이유가 무엇인가?
-        println(operator)
         this.setUpdatedBy(operator, now)
     }
 

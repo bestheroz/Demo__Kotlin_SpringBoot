@@ -130,25 +130,31 @@ class UserService(
         id: Long,
         payload: UserChangePasswordDto.Request,
         operator: Operator,
-    ): UserDto.Response =
-        withContext(Dispatchers.IO) { userRepository.findById(id) }
-            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
-            .also {
-                if (it.removedFlag) {
-                    throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
+    ): UserDto.Response {
+        val user =
+            withContext(Dispatchers.IO) {
+                userRepository.findById(id).orElseThrow {
+                    BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
                 }
-                it.password
-                    ?.takeUnless { password -> PasswordUtil.isPasswordValid(payload.oldPassword, password) }
-                    ?.let {
-                        log.warn("password not match")
-                        throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
-                    }
-                it.password
-                    ?.takeIf { password -> PasswordUtil.isPasswordValid(payload.newPassword, password) }
-                    ?.let { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
-            }.apply { changePassword(payload.newPassword, operator) }
-            .let { withContext(Dispatchers.IO) { userRepository.save(it) } }
-            .let(UserDto.Response::of)
+            }
+        if (user.removedFlag) {
+            throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
+        }
+
+        user.password
+            ?.takeUnless { password -> PasswordUtil.isPasswordValid(payload.oldPassword, password) }
+            ?.let {
+                log.warn("password not match")
+                throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
+            }
+        user.password
+            ?.takeIf { password -> PasswordUtil.isPasswordValid(payload.newPassword, password) }
+            ?.let { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
+
+        user.changePassword(payload.newPassword, operator)
+        withContext(Dispatchers.IO) { userRepository.save(user) }
+        return user.let(UserDto.Response::of)
+    }
 
     @Transactional
     suspend fun loginUser(payload: UserLoginDto.Request): TokenDto =
