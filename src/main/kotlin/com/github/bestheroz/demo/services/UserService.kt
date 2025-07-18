@@ -80,6 +80,7 @@ class UserService(
         val userDeferred = coroutineScope.async(Dispatchers.IO) { userRepository.findById(id) }
 
         userLoginIdDeferred.await().ifPresent {
+            userDeferred.cancel()
             throw BadRequest400Exception(ExceptionCode.ALREADY_JOINED_ACCOUNT)
         }
 

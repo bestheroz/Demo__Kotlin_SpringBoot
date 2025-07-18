@@ -82,6 +82,7 @@ class AdminService(
         val adminDeferred = coroutineScope.async(Dispatchers.IO) { adminRepository.findById(id) }
 
         adminLoginIdDeferred.await().ifPresent {
+            adminDeferred.cancel()
             throw BadRequest400Exception(ExceptionCode.ALREADY_JOINED_ACCOUNT)
         }
 
