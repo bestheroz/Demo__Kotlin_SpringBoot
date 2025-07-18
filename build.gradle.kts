@@ -35,8 +35,8 @@ dependencies {
     implementation(kotlin("noarg"))
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    implementation("com.google.dagger:dagger-compiler:2.56.2")
-    ksp("com.google.dagger:dagger-compiler:2.56.2")
+    implementation("com.google.dagger:dagger-compiler:2.57")
+    ksp("com.google.dagger:dagger-compiler:2.57")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // Coroutines
