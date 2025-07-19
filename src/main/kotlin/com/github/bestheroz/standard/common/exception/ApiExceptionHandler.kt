@@ -52,8 +52,11 @@ class ApiExceptionHandler {
     fun authenticationException401(e: Unauthorized401Exception): ResponseEntity<ApiResult<*>> {
         log.warn(LogUtils.getStackTrace(e))
         val builder: ResponseEntity.BodyBuilder = ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        if (e.exceptionCode == ExceptionCode.EXPIRED_TOKEN) {
-            builder.header("token", "must-renew")
+        when (e.exceptionCode) {
+            ExceptionCode.EXPIRED_TOKEN -> builder.header("token", "must-renew")
+            ExceptionCode.MISSING_AUTHENTICATION ->
+                log.error("@CurrentUser annotation used without proper authentication")
+            else -> {}
         }
         return builder.body(of(e.exceptionCode, e.data))
     }
@@ -107,11 +110,9 @@ class ApiExceptionHandler {
     fun methodArgumentNotValidException(
         e: MethodArgumentNotValidException,
     ): ResponseEntity<ApiResult<*>> {
+        log.warn(LogUtils.getStackTrace(e))
         val errors =
-            e.bindingResult.fieldErrors
-                .map { "${it.field}: ${it.defaultMessage}" }
-                .joinToString(", ")
-
+            e.bindingResult.fieldErrors.joinToString(", ") { "${it.field}: ${it.defaultMessage}" }
         log.warn("Validation failed: $errors")
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)

@@ -53,7 +53,7 @@ dependencies {
 
     // Database
     implementation("com.mysql:mysql-connector-j:9.3.0")
-    implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.11.0")
+    implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.12.0")
 
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.0")
