@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 
 @Repository
-interface HealthRepository : JpaRepository<Admin, Long?> {
+interface HealthRepository : JpaRepository<Admin, Long> {
     @Query(value = "select now()", nativeQuery = true)
     fun selectNow()
 }
