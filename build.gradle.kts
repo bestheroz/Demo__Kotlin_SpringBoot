@@ -5,7 +5,7 @@ plugins {
     kotlin("plugin.jpa") version kotlinVersion
 
     id("com.google.devtools.ksp") version "2.2.20-Beta2-2.0.2"
-    id("org.springframework.boot") version "4.0.0-M1"
+    id("org.springframework.boot") version "3.5.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "7.2.1"
     id("com.github.ben-manes.versions") version "0.52.0"
@@ -26,7 +26,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:4.0.0-M1")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.4")
     }
 }
 
