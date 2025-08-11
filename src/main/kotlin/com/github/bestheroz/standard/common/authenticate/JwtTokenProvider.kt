@@ -15,7 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
 import org.springframework.util.Assert
 import java.time.Instant
-import java.util.*
+import java.util.Date
 
 @Component
 class JwtTokenProvider(

@@ -2,7 +2,6 @@ package com.github.bestheroz.standard.common.domain.converter
 
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
-import java.util.*
 
 @Converter
 open class GenericEnumConverter<T : Enum<T>>(

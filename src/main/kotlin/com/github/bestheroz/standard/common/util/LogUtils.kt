@@ -1,7 +1,7 @@
 package com.github.bestheroz.standard.common.util
 
 import org.apache.commons.lang3.exception.ExceptionUtils
-import java.util.*
+import java.util.Arrays
 import java.util.stream.Collectors
 
 object LogUtils {
