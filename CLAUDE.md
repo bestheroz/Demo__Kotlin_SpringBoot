@@ -35,7 +35,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-This is a Kotlin Spring Boot application (v3.5.4) using Java 21 and Kotlin 2.2.20-Beta2 with a three-layer architecture:
+This is a Kotlin Spring Boot application (v3.5.5) using Java 21 and Kotlin 2.2.20-RC with a three-layer architecture:
 
 1. **Controller Layer** (`src/main/kotlin/com/github/bestheroz/demo/controller/`)
    - RESTful APIs with OpenAPI/Swagger documentation
@@ -64,9 +64,11 @@ The `standard` package contains reusable framework code:
 ## Authentication & Security
 
 - JWT tokens with configurable expiration (5min access, 30min refresh by default)
-- Role-based access control (e.g., USER_VIEW, USER_EDIT)
-- Separate authentication endpoints for Admin (`/api/admin/auth/`) and User (`/api/users/auth/`)
-- Refresh token mechanism at `/refresh-token` endpoints
+- Role-based access control (e.g., ADMIN_VIEW, ADMIN_EDIT, USER_VIEW, USER_EDIT)
+- Separate authentication endpoints:
+  - Admin: `POST /api/v1/admins/login`, `GET /api/v1/admins/renew-token`
+  - User: `POST /api/v1/users/login`, `GET /api/v1/users/renew-token`
+- Refresh token mechanism for token renewal
 
 ## Database
 
