@@ -1,11 +1,11 @@
 plugins {
-    val kotlinVersion = "2.2.20-Beta2"
+    val kotlinVersion = "2.2.20-RC2"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("com.google.devtools.ksp") version "2.2.20-Beta2-2.0.2"
-    id("org.springframework.boot") version "3.5.4"
+    id("com.google.devtools.ksp") version "2.2.20-RC-2.0.2"
+    id("org.springframework.boot") version "3.5.5"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "7.2.1"
     id("com.github.ben-manes.versions") version "0.52.0"
@@ -26,7 +26,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.4")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.5")
     }
 }
 
@@ -35,8 +35,8 @@ dependencies {
     implementation(kotlin("noarg"))
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    implementation("com.google.dagger:dagger-compiler:2.57")
-    ksp("com.google.dagger:dagger-compiler:2.57")
+    implementation("com.google.dagger:dagger-compiler:2.57.1")
+    ksp("com.google.dagger:dagger-compiler:2.57.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // Coroutines
@@ -57,12 +57,12 @@ dependencies {
 
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.0")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.18.0")
-    implementation("io.sentry:sentry-logback:8.18.0")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.20.0")
+    implementation("io.sentry:sentry-logback:8.20.0")
 
     // OpenAPI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.9")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.12")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.12")
 
     // Utility
     implementation("org.fusesource.jansi:jansi:2.4.2")
@@ -84,7 +84,7 @@ tasks.bootJar {
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     kotlin {
-        ktfmt("0.56").googleStyle()
+        ktfmt("0.58").googleStyle()
         ktlint("1.7.1").editorConfigOverride(
             mapOf(
                 "ktlint_code_style" to "ktlint_official",
