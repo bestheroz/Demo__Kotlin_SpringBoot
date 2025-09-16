@@ -13,9 +13,9 @@ import com.github.bestheroz.standard.common.dto.TokenDto
 import com.github.bestheroz.standard.common.exception.BadRequest400Exception
 import com.github.bestheroz.standard.common.exception.ExceptionCode
 import com.github.bestheroz.standard.common.exception.Unauthorized401Exception
-import com.github.bestheroz.standard.common.log.logger
 import com.github.bestheroz.standard.common.security.Operator
 import com.github.bestheroz.standard.common.util.PasswordUtil
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -33,7 +33,7 @@ class AdminService(
     private val jwtTokenProvider: JwtTokenProvider,
 ) {
     companion object {
-        private val log = logger()
+        private val logger = KotlinLogging.logger {}
     }
 
     suspend fun getAdminList(payload: AdminDto.Request): ListResult<AdminDto.Response> =
@@ -148,7 +148,7 @@ class AdminService(
         admin.password
             ?.takeUnless { password -> PasswordUtil.isPasswordValid(payload.oldPassword, password) }
             ?.let {
-                log.warn("password not match")
+                logger.warn { "password not match" }
                 throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
             }
         admin.password
@@ -172,7 +172,7 @@ class AdminService(
         admin.password
             ?.takeUnless { password -> PasswordUtil.isPasswordValid(payload.password, password) }
             ?.let {
-                log.warn("password not match")
+                logger.warn { "password not match" }
                 throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
             }
         admin.renewToken(jwtTokenProvider.createRefreshToken(Operator(admin)))

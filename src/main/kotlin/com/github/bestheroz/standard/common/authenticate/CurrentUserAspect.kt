@@ -2,7 +2,7 @@ package com.github.bestheroz.standard.common.authenticate
 
 import com.github.bestheroz.standard.common.exception.ExceptionCode
 import com.github.bestheroz.standard.common.exception.Unauthorized401Exception
-import com.github.bestheroz.standard.common.log.logger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 @Component
 class CurrentUserAspect {
     companion object {
-        private val log = logger()
+        private val logger = KotlinLogging.logger {}
     }
 
     @Around(
@@ -26,9 +26,9 @@ class CurrentUserAspect {
         if (
             authentication == null || !authentication.isAuthenticated || authentication.principal == null
         ) {
-            log.error(
-                "@CurrentUser 코드 누락됨 - Authentication missing or invalid for method: ${joinPoint.signature.name}",
-            )
+            logger.error {
+                "@CurrentUser 코드 누락됨 - Authentication missing or invalid for method: ${joinPoint.signature.name}"
+            }
             throw Unauthorized401Exception(ExceptionCode.MISSING_AUTHENTICATION)
         }
 

@@ -1,7 +1,7 @@
 package com.github.bestheroz.standard.config
 
-import com.github.bestheroz.standard.common.log.logger
 import com.github.bestheroz.standard.common.util.LogUtils
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,13 +13,13 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class CoroutineConfig : DisposableBean {
     companion object {
-        private val log = logger()
+        private val logger = KotlinLogging.logger {}
     }
 
     private val job = SupervisorJob()
     private val exceptionHandler =
         CoroutineExceptionHandler { _, exception ->
-            log.error(LogUtils.getStackTrace(exception))
+            logger.error { LogUtils.getStackTrace(exception) }
         }
     private val coroutineScope = CoroutineScope(job + Dispatchers.IO + exceptionHandler)
 
