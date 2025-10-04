@@ -35,7 +35,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-This is a Kotlin Spring Boot application (v3.5.5) using Java 21 and Kotlin 2.2.20-RC with a three-layer architecture:
+This is a Kotlin Spring Boot application (v3.5.6) using Java 21 and Kotlin 2.2.20-RC with a three-layer architecture:
 
 1. **Controller Layer** (`src/main/kotlin/com/github/bestheroz/demo/controller/`)
    - RESTful APIs with OpenAPI/Swagger documentation
@@ -98,3 +98,28 @@ The `standard` package contains reusable framework code:
 7. **Coroutines**: Used with `runBlocking` in Spring MVC controllers for async operations
 8. **Database Migration**: SQL scripts located in `/migration/` directory (V1, V2, V3)
 9. **Testing**: Use `./gradlew test --tests "*TestClassName*"` for running specific tests
+
+## Transaction Boundary Principles
+
+✅ **올바른 패턴**:
+- Controller → Service (with @Transactional) → Repository
+- Controller → Service (with @Transactional) → Helper Service (without @Transactional)
+- Service (with @Transactional) → Private methods (without @Transactional)
+
+❌ **피해야 할 패턴**:
+- Service (with @Transactional) → Service (with @Transactional)
+- Helper Service에 @Transactional 사용
+- Private 메서드에 @Transactional 사용
+
+## Logging Standards
+
+- **Framework**: kotlin-logging-jvm (io.github.oshai:kotlin-logging-jvm)
+- **Pattern**: `private val logger = KotlinLogging.logger {}`
+- **Custom Logger**: standard/common/log/Logger 활용
+- **TraceLogger**: AOP 기반 메서드 실행 추적
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
