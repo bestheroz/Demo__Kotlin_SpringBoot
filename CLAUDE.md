@@ -63,12 +63,16 @@ The `standard` package contains reusable framework code:
 
 ## Authentication & Security
 
-- JWT tokens with configurable expiration (5min access, 30min refresh by default)
-- Role-based access control (e.g., ADMIN_VIEW, ADMIN_EDIT, USER_VIEW, USER_EDIT)
-- Separate authentication endpoints:
-  - Admin: `POST /api/v1/admins/login`, `GET /api/v1/admins/renew-token`
-  - User: `POST /api/v1/users/login`, `GET /api/v1/users/renew-token`
-- Refresh token mechanism for token renewal
+- **JWT Authentication**: Stateless JWT-based auth with BCrypt password encoding
+- **Token Configuration**: 5min access token, 30min refresh token by default (1440min in local profile)
+- **Authorization**: Method-level security with `@PreAuthorize` using authorities (ADMIN_VIEW, ADMIN_EDIT, USER_VIEW, USER_EDIT)
+- **Public Endpoints**: Login endpoints, health checks, notice listing (read-only), check-login-id, renew-token
+- **CORS**: Configured for `http://localhost:3000` with credentials support
+- **Authentication Endpoints**:
+  - Admin: `POST /api/v1/admins/login`, `GET /api/v1/admins/renew-token`, `DELETE /api/v1/admins/logout`
+  - User: `POST /api/v1/users/login`, `GET /api/v1/users/renew-token`, `DELETE /api/v1/users/logout`
+- **CurrentUser Injection**: Use `@CurrentUser operator: Operator` parameter to access authenticated user context
+- **Security Filter**: JwtAuthenticationFilter validates JWT tokens before UsernamePasswordAuthenticationFilter
 
 ## Database
 
@@ -91,13 +95,16 @@ The `standard` package contains reusable framework code:
 
 1. **Running locally**: Default port 8000, Swagger UI at http://localhost:8000/swagger-ui.html
 2. **Code style**: ktfmt Google style + ktlint with custom rules (wildcards enabled, max-line-length disabled)
-3. **Main class**: `com.github.bestheroz.Application` 
+3. **Main class**: `com.github.bestheroz.Application`
 4. **Docker**: Dockerfile included for containerized deployment
-5. **Error responses**: Standardized format via ApiExceptionHandler
+5. **Error responses**: Standardized format via ApiExceptionHandler with custom exception classes (BadRequest400, Unauthorized401, Forbidden403, InternalServerError500, TooManyRequests429)
 6. **Monitoring**: Sentry integration with configurable sampling (disabled in local)
-7. **Coroutines**: Used with `runBlocking` in Spring MVC controllers for async operations
+7. **Coroutines**: Used with `runBlocking` in Spring MVC controllers for async operations (requires kotlinx-coroutines-core and kotlinx-coroutines-reactor dependencies)
 8. **Database Migration**: SQL scripts located in `/migration/` directory (V1, V2, V3)
 9. **Testing**: Use `./gradlew test --tests "*TestClassName*"` for running specific tests
+10. **Operator Context**: Access authenticated user via `@CurrentUser operator: Operator` injected by CurrentUserAspect
+11. **Soft Delete**: Entities with `removed_flag` and `removed_at` fields follow soft delete pattern
+12. **API Responses**: Use `ApiResult` wrapper for consistent response format, `ListResult` for paginated lists
 
 ## Transaction Boundary Principles
 
