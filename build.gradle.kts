@@ -57,8 +57,8 @@ dependencies {
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.0")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.13")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.24.0-alpha.2")
-    implementation("io.sentry:sentry-logback:8.24.0-alpha.2")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.24.0")
+    implementation("io.sentry:sentry-logback:8.24.0")
 
     // OpenAPI (UI includes API dependency)
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
