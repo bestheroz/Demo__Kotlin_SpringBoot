@@ -1,13 +1,13 @@
 plugins {
-    val kotlinVersion = "2.3.0-Beta2"
+    val kotlinVersion = "2.3.0-RC"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("com.google.devtools.ksp") version "2.3.2"
-    id("org.springframework.boot") version "3.5.7"
+    id("com.google.devtools.ksp") version "2.3.3"
+    id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "8.0.0"
+    id("com.diffplug.spotless") version "8.1.0"
     id("com.github.ben-manes.versions") version "0.53.0"
     idea
 }
@@ -16,7 +16,7 @@ group = "com.github.bestheroz"
 version = "0.0.1"
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -26,7 +26,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.7")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:4.0.0")
     }
 }
 
@@ -44,7 +44,6 @@ dependencies {
 
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.aspectj:aspectjweaver")
@@ -52,16 +51,16 @@ dependencies {
 
     // Database
     implementation("com.mysql:mysql-connector-j:9.5.0")
-    implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.12.0")
+    implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:2.0.0")
 
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.0")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.13")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.26.0")
+    implementation("io.sentry:sentry-spring-boot-4:8.26.0")
     implementation("io.sentry:sentry-logback:8.26.0")
 
     // OpenAPI (UI includes API dependency)
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
 
     // Utility
     implementation("org.fusesource.jansi:jansi:2.4.2")
@@ -94,7 +93,7 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     }
 
     kotlinGradle {
-        ktlint("1.7.1")
+        ktlint("1.8.0")
     }
 }
 

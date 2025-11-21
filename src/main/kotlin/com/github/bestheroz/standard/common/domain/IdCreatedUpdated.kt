@@ -65,13 +65,16 @@ abstract class IdCreatedUpdated : IdCreated() {
     val updatedBy: UserSimpleDto
         get() =
             when (updatedObjectType) {
-                UserTypeEnum.ADMIN ->
+                UserTypeEnum.ADMIN -> {
                     updater?.let(UserSimpleDto::of)
                         ?: updatedByAdmin?.let(UserSimpleDto::of)
                         ?: throw IllegalStateException("Neither updatedByAdmin nor updater exists")
-                UserTypeEnum.USER ->
+                }
+
+                UserTypeEnum.USER -> {
                     updater?.let(UserSimpleDto::of)
                         ?: updatedByUser?.let(UserSimpleDto::of)
                         ?: throw IllegalStateException("Neither updatedByUser nor updater exists")
+                }
             }
 }

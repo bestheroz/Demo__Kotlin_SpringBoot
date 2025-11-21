@@ -100,12 +100,15 @@ class JwtAuthenticationFilter(
             HttpMethod.GET.toString() -> {
                 publicGetPatterns.any { pattern -> pathMatcher.match(pattern, requestURI) }
             }
+
             HttpMethod.POST.toString() -> {
                 publicPostPatterns.any { pattern -> pathMatcher.match(pattern, requestURI) }
             }
+
             HttpMethod.DELETE.toString() -> {
                 publicDeletePatterns.any { pattern -> pathMatcher.match(pattern, requestURI) }
             }
+
             else -> {
                 false
             }

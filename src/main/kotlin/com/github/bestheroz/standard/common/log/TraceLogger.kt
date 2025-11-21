@@ -55,6 +55,7 @@ class TraceLogger(
                 ) -> {
                     log.info { "$signature E N D [${stopWatch.totalTimeMillis}ms]" }
                 }
+
                 else -> {
                     log.info {
                         val returnValue =

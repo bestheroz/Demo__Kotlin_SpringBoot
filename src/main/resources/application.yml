@@ -1,9 +1,16 @@
 spring:
   profiles:
     active: local
+  threads:
+    virtual:
+      enabled: true
   servlet:
     multipart:
       enabled: false
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
   web:
     resources:
       chain:
@@ -18,6 +25,11 @@ spring:
   jackson:
     serialization:
       FAIL_ON_EMPTY_BEANS: false
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 server:
   port: 8000
   compression:
@@ -28,10 +40,6 @@ server:
     session:
       cookie:
         name: JSESSIONID_DEMO
-    encoding:
-      charset: UTF-8
-      enabled: true
-      force: true
 decorator:
   datasource:
     p6spy:
@@ -41,7 +49,7 @@ sentry:
   dsn:
   traces-sample-rate: 0
 jwt:
-  secret: JOONY.KIM!!demo-api%%jwt^^secret
+  secret: ${JWT_SECRET:JOONY.KIM!!demo-api%%jwt^^secret}
   access-token-expiration-minutes: 5
   refresh-token-expiration-minutes: 30
 ---
@@ -50,13 +58,20 @@ spring:
     activate:
       on-profile: local
   datasource:
-    url: jdbc:mysql://stkim.ddns.net:3306/studydb?useSSL=false&serverTimezone=UTC&zeroDateTimeBehavior=convertToNull
-    username: studydb
-    password: studydb%#123
+    url: ${DB_URL:jdbc:mysql://stkim.ddns.net:3306/studydb?useSSL=false&serverTimezone=UTC&zeroDateTimeBehavior=convertToNull}
+    username: ${DB_USERNAME:studydb}
+    password: ${DB_PASSWORD:studydb%#123}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 3
       minimum-idle: 2
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+server:
+  port: 8000
 sentry:
   logging:
     enabled: false
@@ -77,6 +92,11 @@ spring:
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
 sentry:
   environment: sandbox
 jwt:
@@ -93,6 +113,11 @@ spring:
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
 sentry:
   environment: qa
 ---
@@ -107,8 +132,5 @@ spring:
     hikari:
       maximum-pool-size: 30
       minimum-idle: 10
-springdoc:
-  api-docs:
-    enabled: false
 sentry:
   environment: prod
