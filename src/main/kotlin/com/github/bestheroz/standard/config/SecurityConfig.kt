@@ -24,7 +24,6 @@ class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
 ) {
     @Bean
-    @Throws(java.lang.Exception::class)
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf({ obj: CsrfConfigurer<HttpSecurity?> -> obj.disable() })

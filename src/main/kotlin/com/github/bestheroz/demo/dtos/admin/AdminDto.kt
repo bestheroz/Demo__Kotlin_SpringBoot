@@ -54,7 +54,7 @@ class AdminDto {
         companion object {
             fun of(admin: Admin): Response =
                 Response(
-                    id = admin.id!!,
+                    id = checkNotNull(admin.id) { "Admin ID must not be null" },
                     loginId = admin.loginId,
                     name = admin.name,
                     useFlag = admin.useFlag,

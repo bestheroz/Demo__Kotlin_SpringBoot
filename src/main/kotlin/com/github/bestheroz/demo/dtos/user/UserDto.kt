@@ -50,7 +50,7 @@ class UserDto {
         companion object {
             fun of(user: User): Response =
                 Response(
-                    id = user.id!!,
+                    id = checkNotNull(user.id) { "User ID must not be null" },
                     loginId = user.loginId,
                     name = user.name,
                     useFlag = user.useFlag,

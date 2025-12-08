@@ -37,7 +37,7 @@ class NoticeDto {
         companion object {
             fun of(notice: Notice): Response =
                 Response(
-                    id = notice.id!!,
+                    id = checkNotNull(notice.id) { "Notice ID must not be null" },
                     title = notice.title,
                     content = notice.content,
                     useFlag = notice.useFlag,
