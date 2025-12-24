@@ -1,4 +1,4 @@
-FROM amazoncorretto:21-alpine-jdk
+FROM amazoncorretto:25-alpine-jdk
 MAINTAINER joony <bestheroz@gmail.com>
 COPY build/libs/*.jar app.jar
 
