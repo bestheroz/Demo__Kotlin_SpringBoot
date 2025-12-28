@@ -1,11 +1,11 @@
 plugins {
-    val kotlinVersion = "2.3.0-RC2"
+    val kotlinVersion = "2.3.0"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("com.google.devtools.ksp") version "2.3.3"
-    id("org.springframework.boot") version "4.0.0"
+    id("com.google.devtools.ksp") version "2.3.4"
+    id("org.springframework.boot") version "4.0.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "8.1.0"
     id("com.github.ben-manes.versions") version "0.53.0"
@@ -26,7 +26,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:4.0.0")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:4.0.1")
     }
 }
 
@@ -56,8 +56,8 @@ dependencies {
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.0")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.13")
-    implementation("io.sentry:sentry-spring-boot-4:8.28.0")
-    implementation("io.sentry:sentry-logback:8.28.0")
+    implementation("io.sentry:sentry-spring-boot-4:8.29.0")
+    implementation("io.sentry:sentry-logback:8.29.0")
 
     // OpenAPI (UI includes API dependency)
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
@@ -82,7 +82,7 @@ tasks.bootJar {
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     kotlin {
-        ktfmt("0.59").googleStyle()
+        ktfmt("0.60").googleStyle()
         ktlint("1.8.0").editorConfigOverride(
             mapOf(
                 "ktlint_code_style" to "ktlint_official",
