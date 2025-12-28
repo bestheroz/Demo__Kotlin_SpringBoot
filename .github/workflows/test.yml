@@ -4,7 +4,7 @@ on:
     branches-ignore: [ sandbox, qa ]
     tags-ignore: ['**']
 jobs:
-  build:
+  build-and-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
@@ -18,8 +18,8 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@main
 
-      - name: Build with Gradle
-        run: ./gradlew assemble --no-daemon -Dspring.profiles.active=prod -x test
+      - name: Build and Check
+        run: ./gradlew assemble --no-daemon --parallel -Dspring.profiles.active=prod -x test
 
   spotless:
     runs-on: ubuntu-latest
