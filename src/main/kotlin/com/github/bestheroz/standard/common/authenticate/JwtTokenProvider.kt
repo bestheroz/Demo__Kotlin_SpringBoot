@@ -64,10 +64,7 @@ class JwtTokenProvider(
             jwt.getClaim("name").asString(),
             UserTypeEnum.valueOf(jwt.getClaim("type").asString()),
             jwt.getClaim("managerFlag").asBoolean(),
-            jwt
-                .getClaim("authorities")
-                .asList(String::class.java)
-                .map(AuthorityEnum::valueOf),
+            jwt.getClaim("authorities").asList(String::class.java).map(AuthorityEnum::valueOf),
         )
     }
 

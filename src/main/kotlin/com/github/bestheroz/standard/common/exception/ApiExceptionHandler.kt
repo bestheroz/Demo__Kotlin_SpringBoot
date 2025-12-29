@@ -101,7 +101,9 @@ class ApiExceptionHandler {
     @ExceptionHandler(UsernameNotFoundException::class)
     fun usernameNotFoundException(e: UsernameNotFoundException?): ResponseEntity<ApiResult<*>> {
         logger.warn { LogUtils.getStackTrace(e) }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(of(ExceptionCode.UNKNOWN_AUTHENTICATION))
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(of(ExceptionCode.UNKNOWN_AUTHENTICATION))
     }
 
     @ExceptionHandler(BindException::class)

@@ -17,10 +17,20 @@ data class UserSimpleDto(
 ) {
     companion object {
         fun of(entity: Admin): UserSimpleDto =
-            UserSimpleDto(checkNotNull(entity.id) { "Admin ID must not be null" }, entity.getType(), entity.loginId, entity.name)
+            UserSimpleDto(
+                checkNotNull(entity.id) { "Admin ID must not be null" },
+                entity.getType(),
+                entity.loginId,
+                entity.name,
+            )
 
         fun of(entity: User): UserSimpleDto =
-            UserSimpleDto(checkNotNull(entity.id) { "User ID must not be null" }, entity.getType(), entity.loginId, entity.name)
+            UserSimpleDto(
+                checkNotNull(entity.id) { "User ID must not be null" },
+                entity.getType(),
+                entity.loginId,
+                entity.name,
+            )
 
         fun of(operator: Operator): UserSimpleDto = UserSimpleDto(operator.id, operator.type, operator.loginId, operator.name)
     }
