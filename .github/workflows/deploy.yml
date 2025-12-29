@@ -60,7 +60,7 @@ jobs:
           add-job-summary: never
 
       - name: Build with Gradle
-        run: ./gradlew assemble --no-daemon --parallel --configuration-cache -Dspring.profiles.active=${{ env.PROFILE }} -x test
+        run: ./gradlew assemble --no-daemon --parallel --configuration-cache --build-cache -Dspring.profiles.active=${{ env.PROFILE }} -x test
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@master

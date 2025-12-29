@@ -25,4 +25,4 @@ jobs:
           add-job-summary: never
 
       - name: Spotless Check and Build
-        run: ./gradlew spotlessCheck assemble --no-daemon --parallel --configuration-cache -Dspring.profiles.active=prod -x test
+        run: ./gradlew spotlessCheck assemble --no-daemon --parallel --configuration-cache --build-cache -Dspring.profiles.active=prod -x test
