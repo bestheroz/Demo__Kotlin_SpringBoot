@@ -35,7 +35,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-This is a Kotlin Spring Boot application (v3.5.6) using Java 21 and Kotlin 2.2.20-RC with a three-layer architecture:
+This is a Kotlin Spring Boot application (v3.5.6) using Java 25 and Kotlin 2.2.20-RC with a three-layer architecture:
 
 1. **Controller Layer** (`src/main/kotlin/com/github/bestheroz/demo/controller/`)
    - RESTful APIs with OpenAPI/Swagger documentation
