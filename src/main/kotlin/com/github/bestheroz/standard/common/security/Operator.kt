@@ -19,7 +19,7 @@ data class Operator(
     constructor(
         admin: Admin,
     ) : this(
-        id = admin.id!!,
+        id = checkNotNull(admin.id) { "Admin ID must not be null" },
         loginId = admin.loginId,
         name = admin.name,
         type = admin.getType(),
@@ -30,7 +30,7 @@ data class Operator(
     constructor(
         user: User,
     ) : this(
-        id = user.id!!,
+        id = checkNotNull(user.id) { "User ID must not be null" },
         loginId = user.loginId,
         name = user.name,
         type = user.getType(),

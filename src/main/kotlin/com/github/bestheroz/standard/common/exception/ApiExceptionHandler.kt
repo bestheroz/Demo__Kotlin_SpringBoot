@@ -84,6 +84,12 @@ class ApiExceptionHandler {
         return ResponseEntity.internalServerError().body(of(e.exceptionCode, e.data))
     }
 
+    @ExceptionHandler(TooManyRequests429Exception::class)
+    fun tooManyRequestsException429(e: TooManyRequests429Exception): ResponseEntity<ApiResult<*>> {
+        logger.warn { LogUtils.getStackTrace(e) }
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(of(e.exceptionCode, e.data))
+    }
+
     @ExceptionHandler(IllegalArgumentException::class, IllegalStateException::class)
     fun illegalArgumentException(e: Throwable?): ResponseEntity<ApiResult<*>> {
         logger.warn { LogUtils.getStackTrace(e) }
@@ -93,7 +99,12 @@ class ApiExceptionHandler {
     }
 
     @ExceptionHandler(UsernameNotFoundException::class)
-    fun usernameNotFoundException(e: UsernameNotFoundException?): ResponseEntity<ApiResult<*>> = ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+    fun usernameNotFoundException(e: UsernameNotFoundException?): ResponseEntity<ApiResult<*>> {
+        logger.warn { LogUtils.getStackTrace(e) }
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(of(ExceptionCode.UNKNOWN_AUTHENTICATION))
+    }
 
     @ExceptionHandler(BindException::class)
     fun bindException(e: Throwable?): ResponseEntity<ApiResult<*>> {
