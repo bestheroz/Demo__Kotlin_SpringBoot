@@ -55,12 +55,12 @@ dependencies {
 
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.0")
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.13")
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.14")
     implementation("io.sentry:sentry-spring-boot-4:8.29.0")
     implementation("io.sentry:sentry-logback:8.29.0")
 
     // OpenAPI (UI includes API dependency)
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
 
     // Utility
     implementation("org.fusesource.jansi:jansi:2.4.2")
@@ -82,7 +82,7 @@ tasks.bootJar {
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     kotlin {
-        ktfmt("0.60").googleStyle()
+        ktfmt("0.61").googleStyle()
         ktlint("1.8.0").editorConfigOverride(
             mapOf(
                 "ktlint_code_style" to "ktlint_official",
