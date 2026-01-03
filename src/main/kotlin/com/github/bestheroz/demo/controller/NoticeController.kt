@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
-import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -31,17 +30,12 @@ class NoticeController(
 ) {
     @GetMapping
     fun getNoticeList(payload: NoticeDto.Request): ListResult<NoticeDto.Response> =
-        runBlocking {
-            noticeService.getNoticeList(payload)
-        }
+        noticeService.getNoticeList(payload)
 
     @GetMapping("{id}")
     fun getNotice(
         @PathVariable id: Long,
-    ): NoticeDto.Response =
-        runBlocking {
-            noticeService.getNotice(id)
-        }
+    ): NoticeDto.Response = noticeService.getNotice(id)
 
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
@@ -49,7 +43,7 @@ class NoticeController(
     fun createNotice(
         @RequestBody payload: NoticeCreateDto.Request,
         @CurrentUser operator: Operator,
-    ): NoticeDto.Response = runBlocking { noticeService.createNotice(payload, operator) }
+    ): NoticeDto.Response = noticeService.createNotice(payload, operator)
 
     @PutMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
@@ -58,7 +52,7 @@ class NoticeController(
         @PathVariable id: Long,
         @RequestBody payload: NoticeCreateDto.Request,
         @CurrentUser operator: Operator,
-    ): NoticeDto.Response = runBlocking { noticeService.updateNotice(id, payload, operator) }
+    ): NoticeDto.Response = noticeService.updateNotice(id, payload, operator)
 
     @DeleteMapping("{id}")
     @Operation(description = "(Soft delete)", responses = [ApiResponse(responseCode = "204")])
@@ -68,7 +62,5 @@ class NoticeController(
     fun deleteNotice(
         @PathVariable id: Long,
         @CurrentUser operator: Operator,
-    ) = runBlocking {
-        noticeService.deleteNotice(id, operator)
-    }
+    ) = noticeService.deleteNotice(id, operator)
 }

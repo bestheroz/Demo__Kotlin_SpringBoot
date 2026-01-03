@@ -16,10 +16,6 @@ import com.github.bestheroz.standard.common.exception.Unauthorized401Exception
 import com.github.bestheroz.standard.common.security.Operator
 import com.github.bestheroz.standard.common.util.PasswordUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
@@ -36,9 +32,9 @@ class UserService(
         private val logger = KotlinLogging.logger {}
     }
 
-    suspend fun getUserList(payload: UserDto.Request): ListResult<UserDto.Response> =
-        withContext(Dispatchers.IO) {
-            userRepository.findAll(
+    fun getUserList(payload: UserDto.Request): ListResult<UserDto.Response> =
+        userRepository
+            .findAll(
                 Specification.allOf(
                     listOfNotNull(
                         UserSpecification.removedFlagIsFalse(),
@@ -49,94 +45,83 @@ class UserService(
                     ),
                 ),
                 PageRequest.of(payload.page - 1, payload.pageSize, Sort.by("id").descending()),
-            )
-        }.map(UserDto.Response::of)
+            ).map(UserDto.Response::of)
             .let(ListResult.Companion::of)
 
-    suspend fun getUser(id: Long): UserDto.Response =
-        withContext(Dispatchers.IO) { userRepository.findById(id) }
+    fun getUser(id: Long): UserDto.Response =
+        userRepository
+            .findById(id)
             .map(UserDto.Response::of)
             .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
 
     @Transactional
-    suspend fun createUser(
+    fun createUser(
         payload: UserCreateDto.Request,
         operator: Operator,
     ): UserDto.Response {
-        withContext(Dispatchers.IO) { userRepository.findByLoginIdAndRemovedFlagFalse(payload.loginId) }
-            .ifPresent { throw BadRequest400Exception(ExceptionCode.ALREADY_JOINED_ACCOUNT) }
-        return withContext(Dispatchers.IO) { userRepository.save(payload.toEntity(operator)) }
-            .let(UserDto.Response::of)
+        userRepository.findByLoginIdAndRemovedFlagFalse(payload.loginId).ifPresent {
+            throw BadRequest400Exception(ExceptionCode.ALREADY_JOINED_ACCOUNT)
+        }
+        return userRepository.save(payload.toEntity(operator)).let(UserDto.Response::of)
     }
 
     @Transactional
-    suspend fun updateUser(
+    fun updateUser(
         id: Long,
         payload: UserUpdateDto.Request,
         operator: Operator,
-    ): UserDto.Response =
-        coroutineScope {
-            val userLoginIdDeferred =
-                async(Dispatchers.IO) {
-                    userRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(payload.loginId, id)
-                }
-            val userDeferred = async(Dispatchers.IO) { userRepository.findById(id) }
-
-            userLoginIdDeferred.await().ifPresent {
-                userDeferred.cancel()
-                throw BadRequest400Exception(ExceptionCode.ALREADY_JOINED_ACCOUNT)
-            }
-
-            userDeferred
-                .await()
-                .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
-                .also {
-                    if (it.removedFlag) {
-                        throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
-                    }
-                }.apply {
-                    update(
-                        payload.loginId,
-                        payload.password,
-                        payload.name,
-                        payload.useFlag,
-                        payload.authorities,
-                        operator,
-                    )
-                    userRepository.save(this)
-                }.let(UserDto.Response::of)
+    ): UserDto.Response {
+        userRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(payload.loginId, id).ifPresent {
+            throw BadRequest400Exception(ExceptionCode.ALREADY_JOINED_ACCOUNT)
         }
 
-    @Transactional
-    suspend fun deleteUser(
-        id: Long,
-        operator: Operator,
-    ) {
-        withContext(Dispatchers.IO) { userRepository.findById(id) }
-            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
-            .also {
-                if (it.removedFlag) {
-                    throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
-                }
-                if (it.id == operator.id) {
-                    throw BadRequest400Exception(ExceptionCode.CANNOT_REMOVE_YOURSELF)
-                }
-            }.apply { remove(operator) }
-            .let { withContext(Dispatchers.IO) { userRepository.save(it) } }
+        val user =
+            userRepository.findById(id).orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
+
+        if (user.removedFlag) {
+            throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
+        }
+
+        user.update(
+            payload.loginId,
+            payload.password,
+            payload.name,
+            payload.useFlag,
+            payload.authorities,
+            operator,
+        )
+        userRepository.save(user)
+        return UserDto.Response.of(user)
     }
 
     @Transactional
-    suspend fun changePassword(
+    fun deleteUser(
+        id: Long,
+        operator: Operator,
+    ) {
+        val user =
+            userRepository.findById(id).orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
+
+        if (user.removedFlag) {
+            throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
+        }
+        if (user.id == operator.id) {
+            throw BadRequest400Exception(ExceptionCode.CANNOT_REMOVE_YOURSELF)
+        }
+
+        user.remove(operator)
+        userRepository.save(user)
+    }
+
+    @Transactional
+    fun changePassword(
         id: Long,
         payload: UserChangePasswordDto.Request,
         operator: Operator,
     ): UserDto.Response {
         val user =
-            withContext(Dispatchers.IO) {
-                userRepository.findById(id).orElseThrow {
-                    BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
-                }
-            }
+            userRepository.findById(id).orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
+
         if (user.removedFlag) {
             throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
         }
@@ -147,67 +132,72 @@ class UserService(
                 logger.warn { "password not match" }
                 throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
             }
+
         user.password
             ?.takeIf { password -> PasswordUtil.isPasswordValid(payload.newPassword, password) }
             ?.let { throw BadRequest400Exception(ExceptionCode.CHANGE_TO_SAME_PASSWORD) }
 
         user.changePassword(payload.newPassword, operator)
-        withContext(Dispatchers.IO) { userRepository.save(user) }
-        return user.let(UserDto.Response::of)
+        userRepository.save(user)
+        return UserDto.Response.of(user)
     }
 
     @Transactional
-    suspend fun loginUser(payload: UserLoginDto.Request): TokenDto =
-        withContext(Dispatchers.IO) { userRepository.findByLoginIdAndRemovedFlagFalse(payload.loginId) }
-            .orElseThrow { BadRequest400Exception(ExceptionCode.UNJOINED_ACCOUNT) }
-            .also {
-                if (it.removedFlag || !it.useFlag) {
-                    throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
-                }
-                it.password
-                    ?.takeUnless { password -> PasswordUtil.isPasswordValid(payload.password, password) }
-                    ?.let {
-                        logger.warn { "password not match" }
-                        throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
-                    }
-            }.apply { renewToken(jwtTokenProvider.createRefreshToken(Operator(this))) }
-            .let { withContext(Dispatchers.IO) { userRepository.save(it) } }
-            .let { TokenDto(jwtTokenProvider.createAccessToken(Operator(it)), it.token ?: "") }
+    fun loginUser(payload: UserLoginDto.Request): TokenDto {
+        val user =
+            userRepository.findByLoginIdAndRemovedFlagFalse(payload.loginId).orElseThrow {
+                BadRequest400Exception(ExceptionCode.UNJOINED_ACCOUNT)
+            }
 
-    @Transactional
-    suspend fun renewToken(refreshToken: String): TokenDto =
-        withContext(Dispatchers.IO) { userRepository.findById(jwtTokenProvider.getId(refreshToken)) }
-            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
-            .also {
-                if (it.removedFlag || it.token == null || !jwtTokenProvider.validateToken(refreshToken)) {
-                    throw Unauthorized401Exception()
-                }
-            }.apply {
-                if (token == refreshToken) {
-                    renewToken(jwtTokenProvider.createRefreshToken(Operator(this)))
-                }
-            }.run {
-                token?.let {
-                    if (jwtTokenProvider.issuedRefreshTokenIn3Seconds(it) || it == refreshToken) {
-                        return TokenDto(jwtTokenProvider.createAccessToken(Operator(this)), it)
-                    }
-                }
-                throw Unauthorized401Exception()
-            }.let { withContext(Dispatchers.IO) { userRepository.save(it) } }
+        if (user.removedFlag || !user.useFlag) {
+            throw BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
+        }
 
-    @Transactional
-    suspend fun logout(id: Long) {
-        withContext(Dispatchers.IO) { userRepository.findById(id) }
-            .orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
-            .apply { logout() }
-            .let { withContext(Dispatchers.IO) { userRepository.save(it) } }
+        user.password
+            ?.takeUnless { password -> PasswordUtil.isPasswordValid(payload.password, password) }
+            ?.let {
+                logger.warn { "password not match" }
+                throw BadRequest400Exception(ExceptionCode.INVALID_PASSWORD)
+            }
+
+        user.renewToken(jwtTokenProvider.createRefreshToken(Operator(user)))
+        userRepository.save(user)
+        return TokenDto(jwtTokenProvider.createAccessToken(Operator(user)), user.token ?: "")
     }
 
-    suspend fun checkLoginId(
+    @Transactional
+    fun renewToken(refreshToken: String): TokenDto {
+        val user =
+            userRepository.findById(jwtTokenProvider.getId(refreshToken)).orElseThrow {
+                BadRequest400Exception(ExceptionCode.UNKNOWN_USER)
+            }
+
+        if (user.removedFlag || user.token == null || !jwtTokenProvider.validateToken(refreshToken)) {
+            throw Unauthorized401Exception()
+        }
+
+        if (user.token == refreshToken) {
+            user.renewToken(jwtTokenProvider.createRefreshToken(Operator(user)))
+        }
+
+        val token = user.token
+        if (token != null && (jwtTokenProvider.issuedRefreshTokenIn3Seconds(token) || token == refreshToken)) {
+            return TokenDto(jwtTokenProvider.createAccessToken(Operator(user)), token)
+        }
+
+        throw Unauthorized401Exception()
+    }
+
+    @Transactional
+    fun logout(id: Long) {
+        val user =
+            userRepository.findById(id).orElseThrow { BadRequest400Exception(ExceptionCode.UNKNOWN_USER) }
+        user.logout()
+        userRepository.save(user)
+    }
+
+    fun checkLoginId(
         loginId: String,
         id: Long?,
-    ): Boolean =
-        withContext(Dispatchers.IO) {
-            userRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(loginId, id)
-        }.isEmpty
+    ): Boolean = !userRepository.findByLoginIdAndRemovedFlagFalseAndIdNot(loginId, id).isPresent
 }

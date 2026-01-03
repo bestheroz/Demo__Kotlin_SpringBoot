@@ -5,7 +5,6 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Date
 
 object DateUtils {
     fun toStringNow(pattern: String): String {
@@ -51,14 +50,6 @@ object DateUtils {
                 .ofInstant(Instant.ofEpochMilli(it), zoneId)
                 .format(DateTimeFormatter.ofPattern(pattern))
         } ?: ""
-    }
-
-    fun toString(
-        date: Date?,
-        pattern: String,
-    ): String {
-        Assert.hasText(pattern, "pattern parameter must not be empty or null")
-        return date?.let { toString(it.time, pattern, ZoneId.of("UTC")) } ?: ""
     }
 
     fun toString(

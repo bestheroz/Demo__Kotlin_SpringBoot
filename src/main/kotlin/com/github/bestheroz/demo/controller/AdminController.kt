@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -42,35 +41,27 @@ class AdminController(
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('ADMIN_VIEW')")
     fun getAdminList(payload: AdminDto.Request): ListResult<AdminDto.Response> =
-        runBlocking {
-            adminService.getAdminList(payload)
-        }
+        adminService.getAdminList(payload)
 
     @GetMapping("check-login-id")
     @Operation(summary = "로그인 아이디 중복 확인")
     fun checkLoginId(
         @Schema(description = "로그인 아이디") @RequestParam loginId: String,
         @Schema(description = "관리자 ID") @RequestParam(required = false) adminId: Long?,
-    ): Boolean = runBlocking { adminService.checkLoginId(loginId, adminId) }
+    ): Boolean = adminService.checkLoginId(loginId, adminId)
 
     @PostMapping("login")
     @Operation(summary = "관리자 로그인")
     fun loginAdmin(
         @RequestBody payload: AdminLoginDto.Request,
-    ): TokenDto =
-        runBlocking {
-            adminService.loginAdmin(payload)
-        }
+    ): TokenDto = adminService.loginAdmin(payload)
 
     @GetMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('ADMIN_VIEW')")
     fun getAdmin(
         @PathVariable id: Long,
-    ): AdminDto.Response =
-        runBlocking {
-            adminService.getAdmin(id)
-        }
+    ): AdminDto.Response = adminService.getAdmin(id)
 
     @GetMapping("renew-token")
     @Operation(
@@ -83,7 +74,7 @@ class AdminController(
     )
     fun renewToken(
         @Schema(description = "리플래시 토큰") @RequestHeader(value = "Authorization") refreshToken: String,
-    ): TokenDto = runBlocking { adminService.renewToken(refreshToken) }
+    ): TokenDto = adminService.renewToken(refreshToken)
 
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
@@ -91,7 +82,7 @@ class AdminController(
     fun createAdmin(
         @RequestBody @Valid payload: AdminCreateDto.Request,
         @CurrentUser operator: Operator,
-    ): AdminDto.Response = runBlocking { adminService.createAdmin(payload, operator) }
+    ): AdminDto.Response = adminService.createAdmin(payload, operator)
 
     @PutMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
@@ -100,7 +91,7 @@ class AdminController(
         @PathVariable id: Long,
         @RequestBody @Valid payload: AdminUpdateDto.Request,
         @CurrentUser operator: Operator,
-    ): AdminDto.Response = runBlocking { adminService.updateAdmin(id, payload, operator) }
+    ): AdminDto.Response = adminService.updateAdmin(id, payload, operator)
 
     @PatchMapping("{id}/password")
     @Operation(summary = "관리자 비밀번호 변경")
@@ -110,7 +101,7 @@ class AdminController(
         @PathVariable id: Long,
         @RequestBody @Valid payload: AdminChangePasswordDto.Request,
         @CurrentUser operator: Operator,
-    ): AdminDto.Response = runBlocking { adminService.changePassword(id, payload, operator) }
+    ): AdminDto.Response = adminService.changePassword(id, payload, operator)
 
     @DeleteMapping("logout")
     @Operation(
@@ -123,10 +114,7 @@ class AdminController(
     @PreAuthorize("hasAuthority('ADMIN_EDIT')")
     fun logout(
         @CurrentUser operator: Operator,
-    ): Unit =
-        runBlocking {
-            adminService.logout(operator.id)
-        }
+    ) = adminService.logout(operator.id)
 
     @DeleteMapping("{id}")
     @Operation(description = "(Soft delete)", responses = [ApiResponse(responseCode = "204")])
@@ -136,8 +124,5 @@ class AdminController(
     fun deleteAdmin(
         @PathVariable id: Long,
         @CurrentUser operator: Operator,
-    ): Unit =
-        runBlocking {
-            adminService.deleteAdmin(id, operator)
-        }
+    ) = adminService.deleteAdmin(id, operator)
 }

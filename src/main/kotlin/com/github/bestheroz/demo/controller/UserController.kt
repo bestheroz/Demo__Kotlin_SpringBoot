@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import kotlinx.coroutines.runBlocking
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -42,32 +41,27 @@ class UserController(
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('USER_VIEW')")
     fun getUserList(payload: UserDto.Request): ListResult<UserDto.Response> =
-        runBlocking {
-            userService.getUserList(payload)
-        }
+        userService.getUserList(payload)
 
     @GetMapping("check-login-id")
     @Operation(summary = "로그인 아이디 중복 확인")
     fun checkLoginId(
         @Schema(description = "로그인 아이디") @RequestParam loginId: String,
         @Schema(description = "유저 ID") @RequestParam(required = false) userId: Long?,
-    ): Boolean = runBlocking { userService.checkLoginId(loginId, userId) }
+    ): Boolean = userService.checkLoginId(loginId, userId)
 
     @PostMapping("login")
     @Operation(summary = "유저 로그인")
     fun loginUser(
         @RequestBody payload: UserLoginDto.Request,
-    ): TokenDto =
-        runBlocking {
-            userService.loginUser(payload)
-        }
+    ): TokenDto = userService.loginUser(payload)
 
     @GetMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('USER_VIEW')")
     fun getUser(
         @PathVariable id: Long,
-    ): UserDto.Response = runBlocking { userService.getUser(id) }
+    ): UserDto.Response = userService.getUser(id)
 
     @GetMapping("renew-token")
     @Operation(
@@ -80,7 +74,7 @@ class UserController(
     )
     fun renewToken(
         @Schema(description = "리플래시 토큰") @RequestHeader(value = "Authorization") refreshToken: String,
-    ): TokenDto = runBlocking { userService.renewToken(refreshToken) }
+    ): TokenDto = userService.renewToken(refreshToken)
 
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
@@ -88,7 +82,7 @@ class UserController(
     fun createUser(
         @RequestBody @Valid payload: UserCreateDto.Request,
         @CurrentUser operator: Operator,
-    ): UserDto.Response = runBlocking { userService.createUser(payload, operator) }
+    ): UserDto.Response = userService.createUser(payload, operator)
 
     @PutMapping("{id}")
     @SecurityRequirement(name = "bearerAuth")
@@ -97,7 +91,7 @@ class UserController(
         @PathVariable id: Long,
         @RequestBody @Valid payload: UserUpdateDto.Request,
         @CurrentUser operator: Operator,
-    ): UserDto.Response = runBlocking { userService.updateUser(id, payload, operator) }
+    ): UserDto.Response = userService.updateUser(id, payload, operator)
 
     @PatchMapping("{id}/password")
     @Operation(summary = "유저 비밀번호 변경")
@@ -107,7 +101,7 @@ class UserController(
         @PathVariable id: Long,
         @RequestBody @Valid payload: UserChangePasswordDto.Request,
         @CurrentUser operator: Operator,
-    ): UserDto.Response = runBlocking { userService.changePassword(id, payload, operator) }
+    ): UserDto.Response = userService.changePassword(id, payload, operator)
 
     @DeleteMapping("logout")
     @Operation(
@@ -120,10 +114,7 @@ class UserController(
     @PreAuthorize("hasAuthority('USER_EDIT')")
     fun logout(
         @CurrentUser operator: Operator,
-    ): Unit =
-        runBlocking {
-            userService.logout(operator.id)
-        }
+    ) = userService.logout(operator.id)
 
     @DeleteMapping("{id}")
     @Operation(description = "(Soft delete)", responses = [ApiResponse(responseCode = "204")])
@@ -133,8 +124,5 @@ class UserController(
     fun deleteUser(
         @PathVariable id: Long,
         @CurrentUser operator: Operator,
-    ): Unit =
-        runBlocking {
-            userService.deleteUser(id, operator)
-        }
+    ) = userService.deleteUser(id, operator)
 }
