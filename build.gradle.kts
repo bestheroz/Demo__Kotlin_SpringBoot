@@ -1,13 +1,13 @@
 plugins {
-    val kotlinVersion = "2.3.20-Beta1"
+    val kotlinVersion = "2.3.20-Beta2"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("com.google.devtools.ksp") version "2.3.4"
-    id("org.springframework.boot") version "4.0.1"
+    id("com.google.devtools.ksp") version "2.3.5"
+    id("org.springframework.boot") version "4.1.0-M1"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "8.1.0"
+    id("com.diffplug.spotless") version "8.2.1"
     id("com.github.ben-manes.versions") version "0.53.0"
     idea
 }
@@ -26,7 +26,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:4.0.1")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:4.1.0-M1")
     }
 }
 
@@ -35,7 +35,7 @@ dependencies {
     implementation(kotlin("noarg"))
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    ksp("com.google.dagger:dagger-compiler:2.58")
+    ksp("com.google.dagger:dagger-compiler:2.59")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // Coroutines
@@ -50,14 +50,14 @@ dependencies {
     implementation("org.apache.commons:commons-lang3")
 
     // Database
-    implementation("com.mysql:mysql-connector-j:9.5.0")
+    implementation("com.mysql:mysql-connector-j:9.6.0")
     implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:2.0.0")
 
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.0")
     implementation("io.github.oshai:kotlin-logging-jvm:8.0.00-beta-04")
-    implementation("io.sentry:sentry-spring-boot-4:8.30.0")
-    implementation("io.sentry:sentry-logback:8.30.0")
+    implementation("io.sentry:sentry-spring-boot-4:8.31.0")
+    implementation("io.sentry:sentry-logback:8.31.0")
 
     // OpenAPI (UI includes API dependency)
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
@@ -82,7 +82,6 @@ tasks.bootJar {
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     kotlin {
-        ktfmt("0.61").googleStyle()
         ktlint("1.8.0").editorConfigOverride(
             mapOf(
                 "ktlint_code_style" to "ktlint_official",

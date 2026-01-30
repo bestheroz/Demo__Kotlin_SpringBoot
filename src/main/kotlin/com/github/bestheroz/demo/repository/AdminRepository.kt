@@ -1,7 +1,10 @@
 package com.github.bestheroz.demo.repository
 
 import com.github.bestheroz.demo.domain.Admin
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.stereotype.Repository
@@ -11,8 +14,19 @@ import java.util.Optional
 interface AdminRepository :
     JpaRepository<Admin, Long>,
     JpaSpecificationExecutor<Admin> {
+    @EntityGraph(attributePaths = ["createdByAdmin", "createdByUser", "updatedByAdmin", "updatedByUser"])
+    override fun findAll(
+        spec: Specification<Admin>,
+        pageable: Pageable,
+    ): Page<Admin>
+
+    @EntityGraph(attributePaths = ["createdByAdmin", "createdByUser", "updatedByAdmin", "updatedByUser"])
+    override fun findById(id: Long): Optional<Admin>
+
+    @EntityGraph(attributePaths = ["createdByAdmin", "createdByUser", "updatedByAdmin", "updatedByUser"])
     fun findByLoginIdAndRemovedFlagFalse(loginId: String): Optional<Admin>
 
+    @EntityGraph(attributePaths = ["createdByAdmin", "createdByUser", "updatedByAdmin", "updatedByUser"])
     fun findByLoginIdAndRemovedFlagFalseAndIdNot(
         loginId: String,
         id: Long?,
