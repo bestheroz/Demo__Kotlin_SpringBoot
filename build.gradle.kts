@@ -1,13 +1,13 @@
 plugins {
-    val kotlinVersion = "2.3.20-Beta2"
+    val kotlinVersion = "2.3.20-RC3"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("com.google.devtools.ksp") version "2.3.5"
-    id("org.springframework.boot") version "4.1.0-M1"
+    id("com.google.devtools.ksp") version "2.3.6"
+    id("org.springframework.boot") version "4.1.0-M2"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "8.2.1"
+    id("com.diffplug.spotless") version "8.3.0"
     id("com.github.ben-manes.versions") version "0.53.0"
     idea
 }
@@ -26,7 +26,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:4.1.0-M1")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:4.1.0-M2")
     }
 }
 
@@ -35,7 +35,7 @@ dependencies {
     implementation(kotlin("noarg"))
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    ksp("com.google.dagger:dagger-compiler:2.59.1")
+    ksp("com.google.dagger:dagger-compiler:2.59.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // Coroutines
@@ -56,11 +56,11 @@ dependencies {
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.1")
     implementation("io.github.oshai:kotlin-logging-jvm:8.0.01")
-    implementation("io.sentry:sentry-spring-boot-4:8.32.0")
-    implementation("io.sentry:sentry-logback:8.32.0")
+    implementation("io.sentry:sentry-spring-boot-4:8.35.0")
+    implementation("io.sentry:sentry-logback:8.35.0")
 
     // OpenAPI (UI includes API dependency)
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
 
     // Utility
     implementation("org.fusesource.jansi:jansi:2.4.2")
