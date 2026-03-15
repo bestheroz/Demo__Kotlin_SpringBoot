@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-Kotlin Spring Boot 4.0.1 application using Java 25 and Kotlin 2.3.0 with Virtual Threads enabled.
+Kotlin Spring Boot 4.1.0-M2 application using Java 25 and Kotlin 2.3.20-RC3 with Virtual Threads enabled.
 
 ### Three-Layer Architecture
 

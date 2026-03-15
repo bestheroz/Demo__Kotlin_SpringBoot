@@ -4,7 +4,6 @@ plugins {
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("com.google.devtools.ksp") version "2.3.6"
     id("org.springframework.boot") version "4.1.0-M2"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "8.3.0"
@@ -22,6 +21,7 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://repo.spring.io/milestone") }
 }
 
 dependencyManagement {
@@ -33,9 +33,7 @@ dependencyManagement {
 dependencies {
     // Kotlin
     implementation(kotlin("noarg"))
-    implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    ksp("com.google.dagger:dagger-compiler:2.59.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // Coroutines
@@ -47,7 +45,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.aspectj:aspectjweaver")
-    implementation("org.apache.commons:commons-lang3")
 
     // Database
     implementation("com.mysql:mysql-connector-j:9.6.0")
@@ -61,14 +58,11 @@ dependencies {
 
     // OpenAPI (UI includes API dependency)
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
-
-    // Utility
-    implementation("org.fusesource.jansi:jansi:2.4.2")
 }
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
+        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
     }
 }
 

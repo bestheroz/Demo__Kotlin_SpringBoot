@@ -1,11 +1,17 @@
 package com.github.bestheroz.standard.common.util
 
-import org.apache.commons.lang3.exception.ExceptionUtils
+import java.io.PrintWriter
+import java.io.StringWriter
 
 object LogUtils {
-    fun getStackTrace(e: Throwable?): String =
-        ExceptionUtils
-            .getStackFrames(e)
+    fun getStackTrace(e: Throwable?): String {
+        if (e == null) return ""
+        val sw = StringWriter()
+        e.printStackTrace(PrintWriter(sw))
+        return sw
+            .toString()
+            .lines()
             .filter { it.startsWith("\tat com.github.bestheroz") || !it.startsWith("\tat") }
             .joinToString("\n")
+    }
 }

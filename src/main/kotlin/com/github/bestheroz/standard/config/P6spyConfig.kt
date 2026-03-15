@@ -5,7 +5,6 @@ import com.p6spy.engine.logging.Category
 import com.p6spy.engine.spy.P6SpyOptions
 import com.p6spy.engine.spy.appender.MessageFormattingStrategy
 import jakarta.annotation.PostConstruct
-import org.apache.commons.lang3.StringUtils
 import org.hibernate.engine.jdbc.internal.FormatStyle
 import org.springframework.context.annotation.Configuration
 import java.text.MessageFormat
@@ -27,7 +26,7 @@ class P6spyConfig {
             sql: String,
             url: String,
         ): String =
-            if (StringUtils.equals(sql, "select now()")) {
+            if (sql == "select now()") {
                 MessageFormat.format(
                     "OperationTime: {0}ms | connectionId : {1} | {2} | readiness: {3}",
                     elapsed,
@@ -41,7 +40,7 @@ class P6spyConfig {
                     elapsed,
                     connectionId,
                     category,
-                    if (StringUtils.isEmpty(sql)) {
+                    if (sql.isEmpty()) {
                         ""
                     } else {
                         "\n" + this.formatSql(category, sql)
@@ -53,12 +52,13 @@ class P6spyConfig {
             category: String,
             sql: String,
         ): String {
-            if (StringUtils.isEmpty(sql)) {
-                return StringUtils.EMPTY
+            if (sql.isEmpty()) {
+                return ""
             }
             if (Category.STATEMENT.name == category) {
                 if (isLocal()) {
-                    return if (StringUtils.startsWithAny("create", "alter", "comment")) {
+                    val trimmedSql = sql.trimStart().lowercase()
+                    return if (trimmedSql.startsWith("create") || trimmedSql.startsWith("alter") || trimmedSql.startsWith("comment")) {
                         FormatStyle.DDL.formatter.format(sql)
                     } else {
                         FormatStyle.HIGHLIGHT.formatter.format(FormatStyle.BASIC.formatter.format(sql))

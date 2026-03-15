@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.servlet.resource.NoResourceFoundException
-import java.lang.IllegalStateException
 
 @RestControllerAdvice
 class ApiExceptionHandler {
