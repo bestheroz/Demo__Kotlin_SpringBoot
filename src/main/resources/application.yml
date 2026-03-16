@@ -22,12 +22,6 @@ spring:
           time_zone: UTC
         default_batch_fetch_size: 1000
     open-in-view: false
-  jackson:
-    serialization:
-      FAIL_ON_EMPTY_BEANS: false
-      WRITE_DATES_AS_TIMESTAMPS: false
-    deserialization:
-      FAIL_ON_UNKNOWN_PROPERTIES: false
 springdoc:
   api-docs:
     enabled: false
