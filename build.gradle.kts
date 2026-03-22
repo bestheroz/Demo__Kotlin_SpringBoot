@@ -4,9 +4,9 @@ plugins {
     kotlin("plugin.spring") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
 
-    id("org.springframework.boot") version "4.1.0-M2"
+    id("org.springframework.boot") version "4.1.0-M3"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "8.3.0"
+    id("com.diffplug.spotless") version "8.4.0"
     id("com.github.ben-manes.versions") version "0.53.0"
     idea
 }
@@ -22,12 +22,6 @@ java {
 repositories {
     mavenCentral()
     maven { url = uri("https://repo.spring.io/milestone") }
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:4.1.0-M2")
-    }
 }
 
 dependencies {
@@ -53,8 +47,8 @@ dependencies {
     // Logging and Sentry
     implementation("com.auth0:java-jwt:4.5.1")
     implementation("io.github.oshai:kotlin-logging-jvm:8.0.01")
-    implementation("io.sentry:sentry-spring-boot-4:8.35.0")
-    implementation("io.sentry:sentry-logback:8.35.0")
+    implementation("io.sentry:sentry-spring-boot-4:8.36.0")
+    implementation("io.sentry:sentry-logback:8.36.0")
 
     // OpenAPI (UI includes API dependency)
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
