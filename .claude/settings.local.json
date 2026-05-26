@@ -95,5 +95,11 @@
       "ShellMonitor",
       "Bash(npx serverless deploy:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "context7",
+    "exa",
+    "filesystem",
+    "github"
+  ]
 }
