@@ -18,7 +18,7 @@
 # build.gradle.kts 에 두고, 여기서는 `@pin`(버전 고정) / `@keep`(미사용 항목 유지) 애노테이션만 쓴다.
 [versions]
 kotlin = "2.4.20"
-sentry = "8.56.0"
+sentry = "8.57.0"
 
 [libraries]
 aspectjweaver = { module = "org.aspectj:aspectjweaver" }
@@ -39,7 +39,7 @@ spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-st
 springdoc-openapi-starter-webmvc-ui = "org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1"
 
 [plugins]
-ben-manes-versions = "io.github.ben-manes.versions:0.62.0"
+ben-manes-versions = "io.github.ben-manes.versions:0.64.0"
 kotlin-jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
